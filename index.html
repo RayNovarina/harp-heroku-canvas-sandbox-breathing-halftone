@@ -2,21 +2,113 @@
 <html>
 <head>
 	<meta charset="UTF-8" />
-	<title>Modified halftone</title>
+	<title>Sandbox Breathing Halftone</title>
 	<style>
 		#buttons a{padding:0 6px;text-decoration:underline;color:blue;cursor:pointer}
 		#buttons a:hover{text-decoration:none}
 	</style>
 </head>
 
+<!-- <div id="buttons">
+	<a id="mike">Mike</a> <a id="mike">Mike Halftone</a> <a id="meg">Meg</a> <a id="meg">Meg Halftone</a> <a id="blue">Blue</a> <a id="black">Black</a> <a id="removehalftone">Remove Halftone</a>
+</div>
+-->
+
 <body>
-	<img id="dragcp" class="halftone" src="./images/christopher_lane-621x557-halftone-image-generator-strong-2-dark-verysmall.png" data-src="./images/christopher_lane-621x557-halftone-image-generator-strong-2-dark-verysmall.png" />
-	<div id="buttons">
-		<a id="rgbc">RGB</a> <a id="red">Red</a> <a id="green">Green</a> <a id="blue">Blue</a> <a id="black">Black</a> <a id="removehalftone">Remove Halftone</a>
+	<div class="canvas-col" style="display: inline-block;">
+		<img id="dragcp" class="halftone" src="./images/mike_stern_CC_600x620.jpg" data-src="./images/mike_stern_CC_600x620.jpg" />
+
+		<div class="buttons-row" style="">
+			<div class="profile-buttons" style="display: inline-block; width: 100px;">
+				<div id="buttons">
+					<a class="if_image_link_clicked" photoTag="mike" action="new_photo"
+					   type="color" imgSrc="./images/mike_stern_CC_600x620.jpg"
+					>Mike</a>
+				</div>
+				<div id="buttons">
+					<a class="if_image_link_clicked" photoTag="mike" action="new_photo"
+					   type="halftone" imgSrc="./images/mike_stern_CC_halftone.png"
+					>as Halftone</a>
+				</div>
+			</div>
+
+			<div class="profile-buttons" style="display: inline-block; width: 100px;">
+				<div id="buttons">
+					<a class="if_image_link_clicked" photoTag="meg" action="new_photo"
+					   type="color" imgSrc="./images/meg_CC_422x436.jpg"
+					>Meg</a>
+				</div>
+				<div id="buttons">
+					<a class="if_image_link_clicked" photoTag="meg" action="new_photo"
+					   type="halftone" imgSrc="./images/meg_makalou_CC_halftone.png"
+					>as Halftone</a>
+				</div>
+			</div>
+
+			<div class="profile-buttons" style="display: inline-block; width: 100px;">
+				<div id="buttons">
+					<a class="">Person3</a>
+				</div>
+				<div id="buttons">
+					<a class="">as Halftone</a>
+				</div>
+			</div>
+
+			<div class="profile-buttons" style="display: inline-block; width: 100px;">
+				<div id="buttons">
+					<a class="">Person4</a>
+				</div>
+				<div id="buttons">
+					<a class="">as Halftone</a>
+				</div>
+			</div>
+
+			<div class="profile-buttons" style="display: inline-block; width: 100px; border-left: 2px black solid;">
+				<div id="buttons">
+					<a id="blue" style="color: red;">Blue</a>
+				</div>
+				<div id="buttons">
+					<a id="black" style="color: red;">Black</a>
+				</div>
+			</div>
+
+			<div class="profile-buttons" style="display: inline-block; width: 100px; border-left: 2px black solid;">
+				<div id="buttons">
+					<a id="removehalftone">Remove<br/>&nbsp;Halftone</a>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="prolfile-photo-col" style="display: inline-block; width: 4 00px; margin-left: 10px;">
+		<img class="profile-photo" style="width: 130px; height: 130px; margin-left: 0px; margin-bottom: 4px;"
+				 src="./images/mike_stern_CC_600x620.jpg" data-src="./images/mike_stern_CC_600x620.jpg" />
+		<img class="profile-photo" style="width: 110px; height: 130px; margin-left: 8px; margin-bottom: 4px;"
+		 		 src="./images/mike_stern_CC_halftone.png" data-src="./images/mike_stern_CC_halftone.png" />
+		<div>
+		<div>
+			<center style="margin-bottom: 20px;">
+				Mike Stern, CEO
+			</center>
+		</div>
+		<img class="profile-photo" style="width: 130px; height: 130px; margin-left: 0px; margin-bottom: 4px;"
+				 src="./images/meg_CC_422x436.jpg" data-src="./images/meg_CC_422x436.jpg" />
+		<img class="profile-photo" style="width: 140px; height: 130px; margin-left: 8px; margin-bottom: 4px;"
+				 src="./images/meg_makalou_CC_halftone.png" data-src="./images/meg_makalou_CC_halftone.png" />
+		<div>
+			<div>
+				<center style="margin-bottom: 20px;">
+					Meg Makalou, HR
+				</center>
+			</div>
+			<!-- <center>Click on photo to change selection.</center> -->
+			<center style="margin-bottom:200px;">&nbsp;</center>
+		</div>
 	</div>
 
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-	<script src="./js/modified-breathing-halftone.js"></script>
+	<script src="./js/sandbox-breathing-halftone.js"></script>
 
 	<script>
 		jQuery(document).ready(function(){
@@ -43,46 +135,51 @@
 				}
 			};
 
-			$('#rgbc').click( function() {
-				console.log(" ..*0c: html.$('#rgbc').click() *");
-						removeHalftone();
-						var img = document.querySelector('#dragcp');
-						halftone = new BreathingHalftone(
-							img, { dotSize: 1/100,
-										 oscAmplitude:0,
-										 initVelocity:1,
-										 isAdditive:true,
-										 channels:['red','green','blue']
-							});
-			});
-
-			$('#red').click( function() {
-				console.log(" ..*0d: html.$('#red').click() *");
-				removeHalftone();
-				addHalftone('red');
-			});
-
-			$('#green').click( function() {
-				console.log(" ..*0d: html.$('#green').click() *");
-				removeHalftone();
-				addHalftone('green');
-			});
-
 			$('#blue').click( function() {
-				console.log(" ..*0e: html.$('#blue').click() *");
+				console.log(" ..*0c: html.$('#blue').click() *");
 				removeHalftone();
 				addHalftone('blue');
 			});
 
 			$('#black').click( function() {
-				console.log(" ..*0f: html.$('#black').click() *");
+				console.log(" ..*0d: html.$('#black').click() *");
 				removeHalftone();
 				addHalftone('lum');});
 
 			$('#removehalftone').click( function() {
-				console.log(" ..*0g: html.$('#removehalftone').click() *");
+				console.log(" ..*0e: html.$('#removehalftone').click() *");
 				removeHalftone();
 			});
+
+			// <a class="if_image_link_clicked" photoTag="mike" action="new_photo"
+			//	 type="color" imgSrc="./images/mike_stern_CC_600x620.jpg"
+			// >Mike</a>
+			// <a class="if_image_link_clicked" photoTag="mike" action="new_photo"
+			//	 type="halftone" imgSrc="./images/mike_stern_CC_halftone.png"
+			// >as Halftone</a>
+			function showNewImage( event, $el, action, photoTag ) {
+				var type = $el.attr('type'),
+						imgSrc = $el.attr('imgSrc');
+				console.log(" ..*0f: html.showNewImage() photoTag: '" + $el.attr('photoTag') +
+									  "'. type: " + type + "'. imgSrc: '" + imgSrc + "'. *");
+				var $img = jQuery('#dragcp');
+				$img.attr('src', imgSrc);
+				$img.attr('data-src', imgSrc);
+			};
+
+			$.each( jQuery('.if_image_link_clicked').toArray(), function( index, el) {
+				jQuery(el).click( function() {
+					var $el = jQuery(el),
+							action = $el.attr('action'),
+							photoTag = $el.attr('photoTag');
+					console.log(" ..*0g: html.$('#if_image_link_clicked').click() action: '" +
+											$el.attr('action') + "'. photoTag: '" + $el.attr('photoTag') + "'. *");
+					removeHalftone();
+					if ( action == 'new_photo' ) {
+						showNewImage( this, $el, action, photoTag );
+					}
+				}); // end jQuery(el).click
+			}); // end $.each
 
 		}); // end: jQuery(document).ready
 	</script>

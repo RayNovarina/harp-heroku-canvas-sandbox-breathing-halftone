@@ -1,7 +1,7 @@
 {
-  "name": "harp-heroku-canvas-bubbles-plume",
+  "name": "harp-canvas-sandbox-breathing-halftone",
   "version": "0.0.1",
-  "description": "Harp server App: javascript/canvas/animated bubbles",
+  "description": "Harp server App: javascript/canvas/breathing halftone",
   "dependencies": {
     "harp": "*"
   }
