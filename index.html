@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Modified halftone</title>
+	<style>
+		#buttons a{padding:0 6px;text-decoration:underline;color:blue;cursor:pointer}
+		#buttons a:hover{text-decoration:none}
+	</style>
+</head>
+
+<body>
+	<img id="dragcp" class="halftone" src="./images/christopher_lane-621x557-halftone-image-generator-strong-2-dark-verysmall.png" data-src="./images/christopher_lane-621x557-halftone-image-generator-strong-2-dark-verysmall.png" />
+	<div id="buttons">
+		<a id="rgbc">RGB</a> <a id="red">Red</a> <a id="green">Green</a> <a id="blue">Blue</a> <a id="black">Black</a> <a id="removehalftone">Remove Halftone</a>
+	</div>
+
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script src="./js/modified-breathing-halftone.js"></script>
+
+	<script>
+		jQuery(document).ready(function(){
+			console.log(" ..*0: html.jQuery(document).ready().");
+
+			function addHalftone( n ) {
+				console.log(" ..*0a: html.addHalftone() for channel '" + n + "'. *");
+				var img = document.querySelector('#dragcp');
+				halftone = new BreathingHalftone(
+					img, {	dotSize:1/100,
+									oscAmplitude:0,
+									initVelocity:1,
+									isAdditive:true,
+									channels:[n]
+				});
+			}
+
+			function removeHalftone() {
+				console.log(" ..*0b: html.removeHalftone() *");
+				if($('#idh').length!==0) {
+					$('#idh').remove();
+					halftone.destroy();
+					delete halftone;
+				}
+			};
+
+			$('#rgbc').click( function() {
+				console.log(" ..*0c: html.$('#rgbc').click() *");
+						removeHalftone();
+						var img = document.querySelector('#dragcp');
+						halftone = new BreathingHalftone(
+							img, { dotSize: 1/100,
+										 oscAmplitude:0,
+										 initVelocity:1,
+										 isAdditive:true,
+										 channels:['red','green','blue']
+							});
+			});
+
+			$('#red').click( function() {
+				console.log(" ..*0d: html.$('#red').click() *");
+				removeHalftone();
+				addHalftone('red');
+			});
+
+			$('#green').click( function() {
+				console.log(" ..*0d: html.$('#green').click() *");
+				removeHalftone();
+				addHalftone('green');
+			});
+
+			$('#blue').click( function() {
+				console.log(" ..*0e: html.$('#blue').click() *");
+				removeHalftone();
+				addHalftone('blue');
+			});
+
+			$('#black').click( function() {
+				console.log(" ..*0f: html.$('#black').click() *");
+				removeHalftone();
+				addHalftone('lum');});
+
+			$('#removehalftone').click( function() {
+				console.log(" ..*0g: html.$('#removehalftone').click() *");
+				removeHalftone();
+			});
+
+		}); // end: jQuery(document).ready
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "harp-heroku-canvas-bubbles-plume",
+  "version": "0.0.1",
+  "description": "Harp server App: javascript/canvas/animated bubbles",
+  "dependencies": {
+    "harp": "*"
+  }
+}
