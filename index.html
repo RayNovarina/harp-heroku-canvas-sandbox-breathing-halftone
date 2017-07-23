@@ -16,36 +16,60 @@
 
 <body>
 	<div class="canvas-col" style="display: inline-block;">
-		<img id="dragcp" class="halftone" src="./images/mike_stern_CC_600x620.jpg" data-src="./images/mike_stern_CC_600x620.jpg" />
+		<img id="dragcp" class="halftone" photoType="color" photoTag="mike"
+			   effectType="halftone" canvasBackgroundColor="black"
+				 src="./images/mike_stern_CC_600x620.jpg" data-src="./images/mike_stern_CC_600x620.jpg" />
 
 		<div class="buttons-row" style="">
-			<div class="profile-buttons" style="display: inline-block; width: 100px;">
+			<div class="profile-buttons" style="display: inline-block; width: 90px;">
 				<div id="buttons">
 					<a class="if_image_link_clicked" photoTag="mike" action="new_photo"
-					   type="color" imgSrc="./images/mike_stern_CC_600x620.jpg"
+					   photoType="color" effectType="halftone"
+						 canvasBackgroundColor="black"
+						 imgSrc="./images/mike_stern_CC_600x620.jpg"
 					>Mike</a>
 				</div>
 				<div id="buttons">
 					<a class="if_image_link_clicked" photoTag="mike" action="new_photo"
-					   type="halftone" imgSrc="./images/mike_stern_CC_halftone.png"
+					   photoType="halftone" effectType="halftone"
+						 canvasBackgroundColor="black"
+						 imgSrc="./images/mike_stern_CC_415x567_halftone.png"
 					>as Halftone</a>
+				</div>
+				<div id="buttons">
+					<a class="if_image_link_clicked" photoTag="mike" action="new_photo"
+					   photoType="halftone" effectType="halftone_copy"
+						 canvasBackgroundColor="copied"
+						 imgSrc="./images/mike_stern_CC_415x567_halftone.png"
+					>Copy Htone</a>
 				</div>
 			</div>
 
-			<div class="profile-buttons" style="display: inline-block; width: 100px;">
+			<div class="profile-buttons" style="display: inline-block; width: 90px;">
 				<div id="buttons">
 					<a class="if_image_link_clicked" photoTag="meg" action="new_photo"
-					   type="color" imgSrc="./images/meg_CC_422x436.jpg"
+					   photoType="color" effectType="halftone"
+						 canvasBackgroundColor="black"
+						 imgSrc="./images/meg_CC_422x436.jpg"
 					>Meg</a>
 				</div>
 				<div id="buttons">
 					<a class="if_image_link_clicked" photoTag="meg" action="new_photo"
-					   type="halftone" imgSrc="./images/meg_makalou_CC_halftone.png"
+					   photoType="halftone" effectType="halftone"
+						 canvasBackgroundColor="black"
+						 imgSrc="./images/meg_makalou_CC_582x547_halftone.png"
 					>as Halftone</a>
+				</div>
+				<div id="buttons">
+					<a class="if_image_link_clicked" photoTag="meg" action="new_photo"
+						 photoType="halftone" effectType="halftone_copy"
+						 canvasBackgroundColor="copied"
+						 imgSrc="./images/meg_makalou_CC_582x547_halftone.png"
+					>Copy Htone</a>
 				</div>
 			</div>
 
-			<div class="profile-buttons" style="display: inline-block; width: 100px;">
+			<div class="profile-buttons" style="display: inline-block; width: 90px;">
 				<div id="buttons">
 					<a class="">Person3</a>
 				</div>
@@ -54,7 +78,7 @@
 				</div>
 			</div>
 
-			<div class="profile-buttons" style="display: inline-block; width: 100px;">
+			<div class="profile-buttons" style="display: inline-block; width: 90px;">
 				<div id="buttons">
 					<a class="">Person4</a>
 				</div>
@@ -63,12 +87,12 @@
 				</div>
 			</div>
 
-			<div class="profile-buttons" style="display: inline-block; width: 100px; border-left: 2px black solid;">
+			<div class="profile-buttons" style="display: inline-block; width: 120px; border-left: 2px black solid;">
 				<div id="buttons">
-					<a id="blue" style="color: red;">Blue</a>
+					<a id="blue" style="color: red;">Blue Halftone</a>
 				</div>
 				<div id="buttons">
-					<a id="black" style="color: red;">Black</a>
+					<a id="black" style="color: red;">Black Halftone</a>
 				</div>
 			</div>
 
@@ -85,22 +109,23 @@
 		<img class="profile-photo" style="width: 130px; height: 130px; margin-left: 0px; margin-bottom: 4px;"
 				 src="./images/mike_stern_CC_600x620.jpg" data-src="./images/mike_stern_CC_600x620.jpg" />
 		<img class="profile-photo" style="width: 110px; height: 130px; margin-left: 8px; margin-bottom: 4px;"
-		 		 src="./images/mike_stern_CC_halftone.png" data-src="./images/mike_stern_CC_halftone.png" />
-		<div>
-		<div>
-			<center style="margin-bottom: 20px;">
-				Mike Stern, CEO
-			</center>
+		 		 src="./images/mike_stern_CC_415x567_halftone.png" data-src="./images/mike_stern_CC_halftone.png" />
+		<div style="width: 278px;">
+			<div style="margin-bottom: 20px;">
+				<div style="">Mike:</div>
+				<div style="display: inline-block; width: 138px; text-align: center;">600x620.jpg</div>
+				<div style="display: inline-block; width: 130px; text-align: center;">415x567_halftone.png</div>
+			</div>
 		</div>
 		<img class="profile-photo" style="width: 130px; height: 130px; margin-left: 0px; margin-bottom: 4px;"
 				 src="./images/meg_CC_422x436.jpg" data-src="./images/meg_CC_422x436.jpg" />
 		<img class="profile-photo" style="width: 140px; height: 130px; margin-left: 8px; margin-bottom: 4px;"
-				 src="./images/meg_makalou_CC_halftone.png" data-src="./images/meg_makalou_CC_halftone.png" />
-		<div>
-			<div>
-				<center style="margin-bottom: 20px;">
-					Meg Makalou, HR
-				</center>
+				 src="./images/meg_makalou_CC_582x547_halftone.png" data-src="./images/meg_makalou_CC_halftone.png" />
+		<div style="width: 278px;">
+			<div style="margin-bottom: 20px;">
+				<div style="">Meg:</div>
+				<div style="display: inline-block; width: 138px; text-align: center;">422x436.jpg</div>
+				<div style="display: inline-block; width: 130px; text-align: center;">582x547_halftone.png</div>
 			</div>
 			<!-- <center>Click on photo to change selection.</center> -->
 			<center style="margin-bottom:200px;">&nbsp;</center>
@@ -115,15 +140,28 @@
 			console.log(" ..*0: html.jQuery(document).ready().");
 
 			function addHalftone( n ) {
-				console.log(" ..*0a: html.addHalftone() for channel '" + n + "'. *");
-				var img = document.querySelector('#dragcp');
+				var img = document.querySelector('#dragcp'),
+					  $img = jQuery(img);
+				console.log(" ..*0a: html.addHalftone() for channel '" + n +
+									"'. photoTag: '" + $img.attr('photoTag') +
+									"'. photoType: " + $img.attr('photoType') +
+									"'. effectType: " + $img.attr('effectType') +
+									"'. canvasBackgroundColor: " + $img.attr('canvasBackgroundColor') +
+									"'. *");
 				halftone = new BreathingHalftone(
-					img, {	dotSize:1/100,
-									oscAmplitude:0,
-									initVelocity:1,
-									isAdditive:true,
-									channels:[n]
-				});
+					img, {	logLevel: 'info',  // 'none', 'info', 'debug', 'all',
+																		 // 'particleInitTrace', 'animationTrace'
+									dotSize: 1/100,
+									oscAmplitude: 0,
+									initVelocity: 1,
+									isAdditive: true,
+									channels: [n],
+									photoType: $img.attr('photoType'),
+									photoTag: $img.attr('photoTag'),
+									effectType: $img.attr('effectType'),
+									canvasBackgroundColor: $img.attr('canvasBackgroundColor'),
+								},
+				);
 			}
 
 			function removeHalftone() {
@@ -144,27 +182,56 @@
 			$('#black').click( function() {
 				console.log(" ..*0d: html.$('#black').click() *");
 				removeHalftone();
-				addHalftone('lum');});
+				addHalftone('lum');
+			});
 
 			$('#removehalftone').click( function() {
 				console.log(" ..*0e: html.$('#removehalftone').click() *");
 				removeHalftone();
 			});
 
-			// <a class="if_image_link_clicked" photoTag="mike" action="new_photo"
-			//	 type="color" imgSrc="./images/mike_stern_CC_600x620.jpg"
-			// >Mike</a>
-			// <a class="if_image_link_clicked" photoTag="mike" action="new_photo"
-			//	 type="halftone" imgSrc="./images/mike_stern_CC_halftone.png"
-			// >as Halftone</a>
-			function showNewImage( event, $el, action, photoTag ) {
-				var type = $el.attr('type'),
-						imgSrc = $el.attr('imgSrc');
+			/* <a class="if_image_link_clicked" photoTag="mike" action="new_photo"
+				    photoType="color" effectType="halftone"
+				    canvasBackgroundColor="black"
+				    imgSrc="./images/mike_stern_CC_600x620.jpg"
+			   >Mike</a>
+			   <a class="if_image_link_clicked" photoTag="mike" action="new_photo"
+				    photoType="halftone" effectType="halftone"
+				    canvasBackgroundColor="black"
+				    imgSrc="./images/mike_stern_CC_halftone.png"
+			   >as Halftone</a>
+				 <a class="if_image_link_clicked" photoTag="mike" action="new_photo"
+						photoType="halftone" effectType="halftone_copy"
+						canvasBackgroundColor="copied"
+						imgSrc="./images/mike_stern_CC_halftone.png"
+				 >Copy Htone</a>
+			*/
+			function showNewImage( event, $el ) {
 				console.log(" ..*0f: html.showNewImage() photoTag: '" + $el.attr('photoTag') +
-									  "'. type: " + type + "'. imgSrc: '" + imgSrc + "'. *");
-				var $img = jQuery('#dragcp');
-				$img.attr('src', imgSrc);
-				$img.attr('data-src', imgSrc);
+									  "'. photoType: " + $el.attr('photoType') +
+										"'. effectType: " + $el.attr('effectType') +
+										"'. canvasBackgroundColor: " + $el.attr('canvasBackgroundColor') +
+										"'. imgSrc: '" + $el.attr('imgSrc') +
+										"'. *");
+				var $img = jQuery('#dragcp'),
+				    currentPhotoType = $img.attr('photoType'),
+						currentPhotoTag  = $img.attr('photoTag');
+				$img.attr('photoType', $el.attr('photoType'));
+				$img.attr('photoTag', $el.attr('photoType'));
+				$img.attr('canvasBackgroundColor', $el.attr('canvasBackgroundColor'));
+				$img.attr('effectType', $el.attr('effectType'));
+				$img.attr('src', $el.attr('imgSrc'));
+				$img.attr('data-src', $el.attr('imgSrc'));
+
+				if ( $el.attr('effectType') == 'halftone_copy') {
+					console.log(" ..*0fa: html.showNewImage() Copy Halftone *");
+					var transition_delay = ( currentPhotoType == $img.attr('photoType') &&
+																	 currentPhotoTag  == $img.attr('photoTag')
+																	 ? 0 : 1500 );
+					setTimeout(function() {
+						addHalftone('blue');
+					}, transition_delay);
+				}
 			};
 
 			$.each( jQuery('.if_image_link_clicked').toArray(), function( index, el) {
@@ -176,7 +243,7 @@
 											$el.attr('action') + "'. photoTag: '" + $el.attr('photoTag') + "'. *");
 					removeHalftone();
 					if ( action == 'new_photo' ) {
-						showNewImage( this, $el, action, photoTag );
+						showNewImage( this, $el );
 					}
 				}); // end jQuery(el).click
 			}); // end $.each

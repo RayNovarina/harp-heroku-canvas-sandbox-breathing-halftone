@@ -7,7 +7,7 @@
 // anonymous function1()
 (function(window) {
 	'use strict';
-	console.log(" ..*1: anonFunc1()");
+	trr_log( { msg: " ..*1: anonFunc1()" } );
 	var Halftone = window.BreathingHalftone = window.BreathingHalftone || {};
 
 	function Vector( x, y ) {
@@ -15,7 +15,6 @@
 	}
 
 	Vector.prototype.set = function( x, y ) {
-		//console.log(" ..*1a: anonFunc1().Vector.prototype.set( " + x + ", " + y + ").");
 		this.x = x;
 		this.y = y;
 	};
@@ -62,7 +61,6 @@
 // anonymous function2()
 (function(window) {
 	'use strict';
-	console.log(" ..*2: anonFunc2()");
 	var TAU = Math.PI * 2;
 
 	function getNow(){
@@ -73,7 +71,6 @@
 	var Vector = Halftone.Vector;
 
 	function Particle( properties ) {
-		//console.log(" ..*2a: create Particle() for origin.x '" + properties.origin.x + "'. origin.y '" + properties.origin.y + "'");
 		this.channel = properties.channel;
 		this.origin = properties.origin;
 		this.parent = properties.parent;
@@ -91,19 +88,22 @@
 		this.oscillationOffset = Math.random() * TAU;
 		this.oscillationMagnitude = Math.random();
 		this.isVisible = false;
+		//trr_log( { msg: " ..*2a: create Particle() for origin.x '" + properties.origin.x +
+		//								"'. origin.y '" + properties.origin.y + "'",
+		//					 this: this, onlyIf: { particleInitTrace: true } } );
 	} // end: function Particle()
 
 	Particle.prototype.applyForce = function( force ) {
-		//console.log(" ..*2b: Particle.applyForce()");
+		trr_log( { msg: " ..*2b: Particle.applyForce()", this: this, onlyIf: { animationTrace: true } } );
 		this.acceleration.add(force);
 	};
 
 	Particle.prototype.update = function() {
 		if ( !this.isVisible && Math.random() > 0.03) {
-			//console.log(" ..*2c: Particle.update() REJECTED");
+			trr_log( { msg: " ..*2c: Particle.update() REJECTED", this: this, onlyIf: { animationTrace: true } } );
 			return;
 		}
-		//console.log(" ..*2c.1: Particle.update()");
+		trr_log( { msg: " ..*2c.1: Particle.update()", this: this, onlyIf: { animationTrace: true } } );
 		this.isVisible = true;
 		this.applyOriginAttraction();
 		this.velocity.add( this.acceleration );
@@ -113,8 +113,8 @@
 		this.calculateSize();
 	};
 
-	Particle.prototype.render = function(ctx) {
-		//console.log(" ..*2d: Particle.render()");
+	Particle.prototype.render = function( ctx, isLastChannel, isLastParticle ) {
+		trr_log( { msg: " ..*2d: Particle.render()", this: this, onlyIf: { animationTrace: true } } );
 		var size = this.size * this.oscSize;
 		var initSize = Math.cos(this.initSize * TAU / 2) * -0.5 + 0.5;
 		size *= initSize;
@@ -123,10 +123,13 @@
 		ctx.arc(this.position.x, this.position.y, size, 0, TAU);
 		ctx.fill();
 		ctx.closePath();
+		if ( isLastChannel && isLastParticle ) {
+			this.parent.renderedLastParticle = true;
+		}
 	};
 
 	Particle.prototype.calculateSize = function() {
-		//console.log(" ..*2e: Particle.calculateSize()");
+		trr_log( { msg: " ..*2e: Particle.calculateSize()", this: this, onlyIf: { animationTrace: true } } );
 		if (this.initSize !== 1) {
 			this.initSize += this.initSizeVelocity;
 			this.initSize = Math.min(1, this.initSize);
@@ -145,7 +148,7 @@
 	};
 
 	Particle.prototype.getR_or_g_or_bValue = function() {
-		//console.log(" ..*2f: Particle.getR_or_g_or_bValue()");
+		trr_log( { msg: " ..*2f: Particle.getR_or_g_or_bValue()", this: this, onlyIf: { animationTrace: true } } );
 		var r_or_g_or_bValue;
 		var position = this.parent.options.isChannelLens ? this.position : this.origin;
 		if ( this.parent.options.isChannelLens ) {
@@ -160,7 +163,7 @@
 	};
 
 	Particle.prototype.applyOriginAttraction = function() {
-		//console.log(" ..*2g: Particle.applyOriginAttraction()");
+		trr_log( { msg: " ..*2g: Particle.applyOriginAttraction()", this: this, onlyIf: { animationTrace: true } } );
 		var attraction = Vector.subtract(this.position, this.origin);
 		attraction.scale(-0.02);
 		this.applyForce(attraction);
@@ -173,8 +176,8 @@
 // anonymous function3()
 (function(window) {
 	'use strict';
-	console.log(" ..*3: anonFunc3()");
-	console.log(" ..*3.1: ===== WHERE LIFE BEGINS =======");
+	trr_log( { msg: " ..*3: anonFunc3()" } );
+	trr_log( { msg: " ..*3.1: ===== WHERE LIFE BEGINS =======" } );
 	var TAU = Math.PI * 2;
 	var ROOT_2 = Math.sqrt(2);
 	var objToString = Object.prototype.toString;
@@ -208,13 +211,15 @@
 
 	// anonymous function3a()
 	(function() {
-		console.log(" ..*3a: anonFunc3a()");
+		trr_log( { msg: " ..*3a: anonFunc3a()" } );
 		var canvas = document.createElement('canvas');
 		var ctx = canvas.getContext && canvas.getContext('2d');
+		// NOTE: supports.canvas: just check if DOM supports canvas.getContext() method.
 		supports.canvas = !!ctx;
 		if ( !supports.canvas ) {
 			return;
 		}
+		// NOTE: supports.darker: check if first pixell of canvas is changed to darker value?
 		canvas.width = 1;
 		canvas.height = 1;
 		ctx.globalCompositeOperation = 'darker';
@@ -224,7 +229,6 @@
 		ctx.fillRect( 0, 0, 1, 1 );
 		var imgData = ctx.getImageData( 0, 0, 1, 1 ).data;
 		supports.darker = imgData[0] === 153 && imgData[1] === 0;
-		console.log(" ..*3a.1: anonFunc3a(). Created <canvas> imgData.len = '" + imgData.length +"'");
 	})(); // end anonymous function3a()
 
 	var lastTime = 0;
@@ -254,8 +258,8 @@
 			clearTimeout( id );
 		};
 	} else {
-		//console.log(" ..*3b: anonFunc3(): have request or cancelAnimationFrame().");
-		console.log(" ..*3b.1 ======= LOADED AND WAITING for button to be clicked =====");
+		//trr_log( { msg: " ..*3b: anonFunc3(): have request or cancelAnimationFrame()." } );
+		trr_log( { msg: " ..*3b.1 ======= LOADED AND WAITING for button to be clicked =====" } );
 	}
 
 	var _Halftone = window.BreathingHalftone || {};
@@ -264,7 +268,7 @@
 
 	// 1) Get here via 'new BreathingHalftone( el_img, {options} )'
 	function Halftone(img, options){
-		console.log(" ..*3.1: creating Halftone() *");
+		trr_log( { msg: " ..*3.1: creating Halftone() *" } );
 		this.options = extend({}, this.constructor.defaults, true);
 		extend(this.options, options, true);
 		this.img = img;
@@ -275,24 +279,33 @@
 	}
 
 	Halftone.defaults = {
-		dotSize:1/40,
+		logLevel: 'none',
+		dotSize: 1/40,
 		dotSizeThreshold: 0.05,
-		initVelocity:0.02,
-		oscPeriod:3,
-		oscAmplitude:0.2,
-		isAdditive:false,
-		isRadial:false,
-		channels:[ 'red', 'green', 'blue' ],
-		isChannelLens:true,
-		friction:0.06,
-		hoverDiameter:0.3,
-		hoverForce:-0.02,
-		activeDiameter:0.6,
-		activeForce:0.01
+		initVelocity: 0.02,
+		oscPeriod: 3,
+		oscAmplitude: 0.2,
+		isAdditive: false,
+		globalCompositeOperation: 'darker',
+		isRadial: false,
+		channels: [ 'red', 'green', 'blue' ],
+		isChannelLens: true,
+		friction: 0.06,
+		hoverDiameter: 0.3,
+		hoverForce: -0.02,
+		activeDiameter: 0.6,
+		activeForce: 0.01,
+		photoType: 'color',
+		photoTag: 'none',
+		effectType: 'halftone',
+		canvasBackgroundColor: 'black',
+		renderedLastParticle: false,
+		isJustCopy: false,
+
 	};
 
 	function makeCanvasAndCtx() {
-		console.log(" ..*3.2: makeCanvasAndCtx() *");
+		trr_log( { msg: " ..*3.2: makeCanvasAndCtx() *" } );
 		var canvas = document.createElement('canvas');
 		var ctx = canvas.getContext('2d');
 		return { canvas:canvas,
@@ -305,29 +318,66 @@
 	//   this.options = {}
 	//   this.img = <img src=xxx>
 	Halftone.prototype.create = function() {
-		console.log(" ..*3.3: Halftone.create() *");
 		this.isActive = true;
+		this.renderedLastParticle = false;
+		this.tracingParticleInitialization = false;
+		this.tracingAnimation = false;
+		this.isJustCopy = ( this.options.photoType == 'halftone' && this.options.effectType == 'halftone_copy' );
+		trr_log( { msg: " ..*3.3: Halftone.create() isJustCopy:" + this.isJustCopy +
+								". From " + this.options.photoType +
+								" Photo to " + (this.options.channels[0] == 'lum'
+										? 'white'
+										: this.options.effectType == 'halftone_copy'
+												? 'copied'
+												: this.options.channels[0]) +
+								" Halftone particles on a " + this.options.canvasBackgroundColor + " Background. *", this: this } );
 		var canvasAndCtx = makeCanvasAndCtx(); // " ..*3.2: makeCanvasAndCtx() *"
 		this.canvas = canvasAndCtx.canvas;
 		this.ctx = canvasAndCtx.ctx;
 		this.canvas.className = this.img.className;
 		this.canvas.id = "idh";
+		// <canvas> is inserted after <img> and image is hidden so we can show
+		// what we draw on the canvas.
 		insertAfter(this.canvas, this.img);
 		this.img.style.visibility = 'hidden';
 
-		// renderer.setClearColor(0x00010D);
-		// ctx.fillStyle = "blue";
-		// ctx.fillRect(0, 0, canvas.width, canvas.height);
-		//this.ctx.fillStyle = "blue";
-		//this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+		// overrides:
+		if ( this.isJustCopy ) {
 
+			// ----- Override: options.isAdditive ------------------------------------
+			// this.ctx.fillStyle = this.options.isAdditive ? 'black' : 'white';
+			// this.ctx.globalCompositeOperation = this.options.isAdditive ? 'lighter' : 'darker';
+			//this.channels = !this.options.isAdditive && !supports.darker ?
+			//	[ 'lum' ] : this.options.channels;
+			this.options.isAdditive = false; // this.ctx.fillStyle = 'white';
+																			 // this.ctx.globalCompositeOperation = 'darker';
+																			 // this.channels = this.options.channels;
+
+			// ------ Recalc: options.globalCompositeOperation -----------------------
+			this.options.globalCompositeOperation = this.options.isAdditive ? 'lighter' : 'darker';
+
+			// ------ Override: options.dotSizeThreshold -----------------------------
+			this.options.dotSizeThreshold = 0; // never reject pixell value, i.e.
+																				 //   pixelR_or_g_or_bValue < this.options.dotSizeThreshold
+
+			// ------ Override: options.dotSize --------------------------------------
+			this.options.dotSize = 1;	// this.gridSize = this.options.dotSize * this.diagonal;
+		}
 		this.channels = !this.options.isAdditive && !supports.darker ?
 			[ 'lum' ] : this.options.channels;
-			this.proxyCanvases = {};
+		this.proxyCanvases = {};
 		for (var i=0, len = this.channels.length; i < len; i++) {
 			var channel = this.channels[i];
 			this.proxyCanvases[ channel ] = makeCanvasAndCtx();
 		}
+
+		trr_log( { msg: " ..*3.3a: Halftone.create() " +
+								"  isAdditive: " + this.options.isAdditive + ". supports.darker: " + supports.darker +
+								". dotSize: " + this.options.dotSize + ". dotSizeThreshold = " + this.options.dotSizeThreshold +
+								" *", this: this } );
+
+		// NOTE: after loadImage() loads the image file, it continues on
+		// and does a .initParticles() and .animate().
 		this.loadImage(); // " ..*3.6: Halftone.loadImage() "
 		this.canvasPosition = new Vector(); // instance of " ..*1a: anonFunc1().Vector"
 		this.getCanvasPosition(); // " ..*3.4: Halftone.getCanvasPosition() *"
@@ -338,7 +388,7 @@
 		var rect = this.canvas.getBoundingClientRect();
 		var x = rect.left + window.pageXOffset;
 		var y = rect.top + window.pageYOffset;
-		//console.log(" ..*3.4: Halftone.getCanvasPosition(): BoundingClientRect x: " + x + " y: " + y + " *");
+		trr_log( { msg: " ..*3.4: Halftone.getCanvasPosition(): BoundingClientRect x: " + x + " y: " + y + " *", this: this } );
 		this.canvasPosition.set( x, y );
 		this.canvasScale = this.width ? this.width / this.canvas.offsetWidth  : 1;
 	};
@@ -346,7 +396,7 @@
 	// 3) Get here via 'this.loadImage'
 	Halftone.prototype.loadImage = function() {
 		var src = this.img.getAttribute('data-src') || this.img.src;
-		console.log(" ..*3.6: Halftone.loadImage(): src = '" + src + "' *");
+		trr_log( { msg: " ..*3.6: Halftone.loadImage(): src = '" + src + "' *", this: this } );
 		var loadingImg = new Image();
 		loadingImg.onload = function() {
 			this.onImgLoad();
@@ -359,7 +409,7 @@
 
 	// 4) Get here via 'this.onImgLoad'
 	Halftone.prototype.onImgLoad = function() {
-		console.log(" ..*3.7: Halftone.onImgLoad() calls getImgData thru animate() *");
+		trr_log( { msg: " ..*3.7: Halftone.onImgLoad() calls getImgData thru animate() *", this: this } );
 		this.getImgData(); " ..*3.8: Halftone.getImgData() *"
 		this.resizeCanvas(); " ..*3.9: Halftone.resizeCanvas() *"
 		this.getCanvasPosition(); // " ..*3.4: Halftone.getCanvasPosition() *"
@@ -370,7 +420,7 @@
 	};
 
 	Halftone.prototype.getImgData = function() {
-		console.log(" ..*3.8: Halftone.getImgData() *");
+		trr_log( { msg: " ..*3.8: Halftone.getImgData() *", this: this } );
 		var canvasAndCtx = makeCanvasAndCtx();
 		var imgCanvas = canvasAndCtx.canvas;
 		var ctx = canvasAndCtx.ctx;
@@ -381,10 +431,13 @@
 		// array containing the data in the RGBA order, with integer values between
 		// 0 and 255 (included). sarah.jpg imgData.len = '582400'
 		this.imgData = ctx.getImageData( 0, 0, this.imgWidth, this.imgHeight ).data;
-		//this.imgDataUrl = this.canvas.toDataURL();  sarah.jpg DataUrl.len = ??
-		//this.imgData = petrospap_breathing_halftone_image_info[0].image_data_as_uri;
-		console.log(" ..*3.8a: Halftone.getImgData(): imgData.len = '" + this.imgData.length +
-								"'. imgWidth = '" + this.imgWidth + "'. imgHeight = '" + this.imgHeight + "' *");
+		this.backgroundRGBA = "rgba( "    + this.imgData[0] + ", " + this.imgData[1] +
+																 ", " + this.imgData[2] + ", " + this.imgData[3] +
+																 " )";
+		trr_log( { msg: " ..*3.8a: Halftone.getImgData(): imgData.character.len = '" + this.imgData.length +
+								"'. imgData.RGBA_arrayCells = '" + this.imgData.length / 4 +
+								"'. imgWidth = '" + this.imgWidth + "'. imgHeight = '" + this.imgHeight +
+								"'. Background RGBA() = '" + this.backgroundRGBA + "' *", this: this } );
 	};
 
 	Halftone.prototype.resizeCanvas = function() {
@@ -393,9 +446,13 @@
 		this.diagonal = Math.sqrt( w*w + h*h );
 		this.imgScale = this.width / this.imgWidth;
 		this.gridSize = this.options.dotSize * this.diagonal;
-		console.log(" ..*3.9: Halftone.resizeCanvas(): Begin canvas.width = " + this.canvas.width +
-		           ". canvas.height = " + this.canvas.height +
-							 ". img.offsetWidth = " + this.img.offsetWidth + ". img.offsetHeight = " + this.img.offsetHeight + ". *");
+		trr_log( { msg: " ..*3.9: Halftone.resizeCanvas(): Begin canvas.width = " + this.canvas.width +
+		           "px. canvas.height = " + this.canvas.height +
+							 "px. img.offsetWidth = " + this.img.offsetWidth + "px. img.offsetHeight = " + this.img.offsetHeight +
+							 "px. diagonal = " + this.diagonal + "px. scale = " + this.imgScale * 100 +
+							 "%. dotSize = " + this.options.dotSize +
+							 ". gridSize = " + this.gridSize + "px per perCent? " +
+							 " *", this: this } );
 		for ( var prop in this.proxyCanvases ) {
 			var proxy = this.proxyCanvases[ prop ];
 			proxy.canvas.width = w;
@@ -403,58 +460,64 @@
 		}
 		this.canvas.width = w;
 		this.canvas.height = h;
-		console.log(" ..*3.9a: Halftone.resizeCanvas(): End canvas.width = " + this.canvas.width +
-		            ". canvas.height = " + this.canvas.height + ". *");
+		trr_log( { msg: " ..*3.9a: Halftone.resizeCanvas(): End canvas.width = " + this.canvas.width +
+		            ". canvas.height = " + this.canvas.height + ". *", this: this } );
 	};
 
 	// 5) Get here via 'this.initParticles'
 	Halftone.prototype.initParticles = function() {
-		console.log(" ..*3.10: Halftone.initParticles() BEGIN *"); console.log("for channels = '" + this.channels + "'");
+		trr_log( { msg: " ..*3.10: Halftone.initParticles() BEGIN *", this: this } ); trr_log( { msg: "for channels = '" + this.channels + "'", this: this } );
 
 		var getParticlesMethod = this.options.isRadial ?
 			'getRadialGridParticles' : 'getCartesianGridParticles';
 		this.particles = [];
 		this.channelParticles = {};
+		this.getParticlesMethod = getParticlesMethod;
+		this.particlesRejectedBecauseParticleIsOutOfBounds = 0;
+		this.particlesRejectedBecausePixelValueLessThanDotSizeThreshold = 0;
 		var angles = { red: 1, green: 2.5, blue: 5, lum: 4 };
 		for (var i=0, len = this.channels.length; i < len; i++) {
 			var channel = this.channels[i];
 			var angle = angles[ channel ];
-			console.log(" ..*3.10a: Halftone.initParticles(): get particles[] via method '" + getParticlesMethod + "()' *");
+			trr_log( { msg: " ..*3.10a: Halftone.initParticles(): get particles[] via method '" + getParticlesMethod + "()' *", this: this } );
 			var particles = this[ getParticlesMethod ]( channel, angle );
 			this.channelParticles[ channel ] = particles;
 			this.particles = this.particles.concat( particles );
 		}
-		console.log(" ..*3.10b: Halftone.initParticles(): DONE: channels.len = '" + this.channels.length +
-								"'. particles.len = '" + this.particles.length + "' *");
+		trr_log( { msg: " ..*3.10b: Halftone.initParticles(): DONE: channels.len = '" + this.channels.length +
+								"'. particles.len = '" + this.particles.length + "' *", this: this } );
 	};
 
 	// 6) Get here via 'this.animate'
 	Halftone.prototype.animate = function() {
-		//console.log(" ..*3.11: Halftone.animate() *");
-		if (!this.isActive){return;}
+		trr_log( { msg: " ..*3.11: Halftone.animate() *", this: this, onlyIf: { animationTrace: true } } );
+		if ( !this.isActive ) {
+			return;
+		}
 		this.update(); // " ..*3.12: Halftone.update() "
 		this.render(); // " ..*3.12a: Halftone.render() "
 		requestAnimationFrame(this.animate.bind( this));
 	};
 
 	Halftone.prototype.update = function() {
-		//console.log(" ..*3.12: Halftone.update() " + this.particles.length + " particles *");
+		trr_log( { msg: " ..*3.12: Halftone.update() " + this.particles.length + " particles *" , this: this, onlyIf: { animationTrace: true } } );
 		for (var i=0, len = this.particles.length; i < len; i++){
 			var particle = this.particles[i];
-			particle.update(); // " ..*2b: Particle.update()"
+			particle.update(); // " ..*2c: Particle.update()"
 		}
 	};
 
 	Halftone.prototype.render = function() {
-		//console.log(" ..*3.12a: Halftone.render() " + this.channels.length + " channels *");
+		trr_log( { msg: " ..*3.12a: Halftone.render() " + this.channels.length + " channels *" , this: this, onlyIf: { animationTrace: true } } );
 		this.ctx.globalCompositeOperation = 'source-over';
 		this.ctx.fillStyle = this.options.isAdditive ? 'black' : 'white';
 		this.ctx.fillRect( 0, 0, this.width, this.height );
 		this.ctx.globalCompositeOperation = this.options.isAdditive ? 'lighter' : 'darker';
 
-		for ( var i=0, len = this.channels.length; i < len; i++ ) {
+		var last_index = this.channels.length - 1;
+		for ( var i=0; i < last_index+1; i++ ) {
 			var channel = this.channels[i];
-			this.renderGrid( channel ); " ..*3.13: Halftone.renderGrid() *"
+			this.renderGrid( channel, i == last_index ); " ..*3.13: Halftone.renderGrid() *"
 		}
 	};
 
@@ -473,8 +536,8 @@
 		}
 	};
 
-	Halftone.prototype.renderGrid = function( channel ) {
-		//console.log(" ..*3.13: Halftone.renderGrid() *");
+	Halftone.prototype.renderGrid = function( channel, isLastChannel ) {
+		trr_log( { msg: " ..*3.13: Halftone.renderGrid() *" , this: this, onlyIf: { animationTrace: true } } );
 		var proxy = this.proxyCanvases[ channel ];
 		proxy.ctx.fillStyle = this.options.isAdditive ? 'black' : 'white';
 		proxy.ctx.fillRect( 0, 0, this.width, this.height );
@@ -482,27 +545,41 @@
 		proxy.ctx.fillStyle = channelFillStyles[ blend ][ channel ];
 		var particles = this.channelParticles[ channel ];
 
-		//console.log(" ..*3.13a: Halftone.renderGrid() LOOP START: channel '" + channel + "'. For " + particles.length + " particles. *");
-		for ( var i=0, len = particles.length; i < len; i++ ) {
+		trr_log( { msg: " ..*3.13a: Halftone.renderGrid() LOOP START: channel '" + channel + "'. For " + particles.length + " particles. *" , this: this, onlyIf: { animationTrace: true } } );
+		var last_index = particles.length - 1;
+		for ( var i=0; i < last_index+1; i++ ) {
 			var particle = particles[i];
-			particle.render(proxy.ctx); // " ..*2c: Particle.render()"
+			particle.render(proxy.ctx, isLastChannel, i == last_index); // " ..*2d: Particle.render()"
 		}
-		//console.log(" ..*3.13b: Halftone.renderGrid() LOOP END: going to call 'this.ctx.drawImage(proxy.canvas, 0, 0)' *");
+		trr_log( { msg: " ..*3.13b: Halftone.renderGrid() LOOP END: going to call 'this.ctx.drawImage(proxy.canvas, 0, 0)' *" , this: this, onlyIf: { animationTrace: true } } );
 		this.ctx.drawImage(proxy.canvas, 0, 0);
-		//console.log(" ..*3.13c: Halftone.renderGrid() DONE *");
+		trr_log( { msg: " ..*3.13c: Halftone.renderGrid() DONE *" , this: this, onlyIf: { animationTrace: true } } );
 	};
 
 	Halftone.prototype.getCartesianGridParticles = function(channel, angle) {
-		//console.log(" ..*3.14: Halftone.getCartesianGridParticles() for channel '" + channel + "'. angle '" + angle + "' *");
+		trr_log( { msg: " ..*3.14: Halftone.getCartesianGridParticles() for channel '" + channel + "'. angle '" + angle + "' *", this: this } );
 		var particles = [];
-		var w = this.width;
-		var h = this.height;
-		var diag = Math.max( w, h ) * ROOT_2;
-		var gridSize = this.gridSize;
-		var cols = Math.ceil( diag / gridSize );
-		var rows = Math.ceil( diag / gridSize );
-
-		//console.log(" ..*3.14a: CartesianGridParticles(): BEGIN LOOP: rows = " + rows + ". columns = " + cols + ". gridSize = " + gridSize + ". *");
+		var w = this.width,
+			  h = this.height,
+				gridSize = this.gridSize,
+				cols = 0,
+				rows = 0;
+		if (this.isJustCopy) {
+			cols = w;
+			rows = h;
+		} else {
+			var diag = Math.max( w, h ) * ROOT_2;
+			cols = Math.ceil( diag / gridSize );
+			rows = Math.ceil( diag / gridSize );
+		}
+		var maxNumOfParticles =  rows * cols;
+		this.maxNumOfParticles = maxNumOfParticles;
+		this.maxOuterIndex = rows -1;
+		this.maxInnerIndex = cols -1;
+		trr_log( { msg: " ..*3.14a: CartesianGridParticles(): BEGIN LOOP: gridSize = " + this.gridSize +
+							  ". rows = " + rows + ". columns = " + cols +
+								". Max number of particles = " + maxNumOfParticles +
+								". isJustCopy:" + this.isJustCopy + ". *", this: this } );
 		for ( var row = 0; row < rows; row++ ) {
 			for ( var col = 0; col < cols; col++ ) {
 				var x1 = ( col + 0.5 ) * gridSize;
@@ -518,13 +595,17 @@
 				// Returns null if rejected. Else returns Particle.
         // NOTE: rejected particle locations just stay whatever the canvas
         // background/fill color is.
-				var particle = this.initParticle(channel, x2, y2); // " ..*3.15: Halftone.initParticle()"
+				var particle = this.initParticle(channel, x2, y2, row, col); // " ..*3.15: Halftone.initParticle()"
 				if ( particle ) {
 					particles.push(particle);
 				}
 			}
 		}
-		//console.log(" ..*3.14b: CartesianGridParticles(): END LOOP: particles[].len = " + particles.length + ". *");
+		trr_log( { msg: " ..*3.14b: CartesianGridParticles(): END LOOP: particles[].len = " +
+								particles.length + ". Out of " + maxNumOfParticles + " possible. " +
+								"Particles Rejected Because Particle Is Out Of Bounds = '" + this.particlesRejectedBecauseParticleIsOutOfBounds +
+								"'. Particles Rejected Because Pixel Value Less Than Dot Size Threshold = '" + this.particlesRejectedBecausePixelValueLessThanDotSizeThreshold +
+								"'. *", this: this } );
 		return particles;
 	};
 
@@ -546,7 +627,7 @@
 				var theta = TAU * j / max + angle;
 				var x = centerX + Math.cos( theta ) * level * gridSize;
 				var y = centerY + Math.sin( theta ) * level * gridSize;
-				var particle = this.initParticle( channel, x, y );
+				var particle = this.initParticle( channel, x, y, level, j );
 				if (particle){
 					particles.push( particle );
 				}
@@ -555,13 +636,22 @@
 		return particles;
 	};
 
-	Halftone.prototype.initParticle = function(channel, x, y) {
-		//console.log(" ..*3.15: Halftone.initParticle() for channel '" + channel +"'. x '" + x + "'. y '" + y + "'. *");
+	Halftone.prototype.initParticle = function(channel, x, y, outer_index, inner_index) {
+		trr_log( { msg: " ..*3.15: Halftone.initParticle() for channel '" +
+										channel + "'. x '" + x + "'. y '" + y +
+										"'. outer_index: '" + outer_index + "'. inner_index: '" + inner_index + "'. *" ,
+							 this: this, outer_index: outer_index, inner_index: inner_index,
+							 onlyIf: { particleInitTrace: true }
+						 } );
 		var pixelR_or_g_or_bValue = this.getPixelR_or_g_or_bValue(x, y, channel);
+		if ( pixelR_or_g_or_bValue == 0 ) {
+			return;
+		}
 		// Returns null if rejected. Else returns Particle.
-		// NOTE: rejected particle locations just stay whatever the canvas
+		// NOTE: rejected particle locations just remain whatever the canvas
 		// background/fill color is.
-		if ( pixelR_or_g_or_bValue < this.options.dotSizeThreshold ){
+		if ( pixelR_or_g_or_bValue < this.options.dotSizeThreshold ) {
+			this.particlesRejectedBecausePixelValueLessThanDotSizeThreshold += 1;
 			return;
 		}
 		return new Particle( { // make instance of " ..*2a: create Particle()"
@@ -580,9 +670,12 @@
 		y = Math.round(y / this.imgScale);
 		var w = this.imgWidth;
 		var h = this.imgHeight;
-		if (x < 0 || x > w || y < 0 || y > h) {
-			return 0;
-		}
+		//if ( !this.isJustCopy ) {
+			if (x < 0 || x > w || y < 0 || y > h) {
+				this.particlesRejectedBecauseParticleIsOutOfBounds += 1;
+				return 0;
+			}
+		//}
 		// this.imgData Is a Uint8ClampedArray representing a one-dimensional
 		// array containing the data in the RGBA order, with integer values between
 		// 0 and 255 (included). sarah.jpg imgData.len = '582400'
@@ -590,6 +683,8 @@
 		var value;
 		if (channel === 'lum') {
 			value = this.getPixelLum( pixelIndex );
+		} else if ( this.isJustCopy ) {
+			value = this.imgData[ pixelIndex ];
 		} else {
 			var index = pixelIndex + channelOffset[channel];
 			value = this.imgData[ index ] / 255;
@@ -625,6 +720,156 @@
 	window.BreathingHalftone = Halftone;
 })(window); // end anonymous function3()
 
+function trr_log( args ) {
+	if ( args.this == undefined ) {
+		console.log( args.msg );
+		return;
+	}
+	var pluginThis = null,
+			particleThis = null;
+	if ( args.this.parent !== undefined ) {
+		// being called from Particle.
+		particleThis = args.this;
+		pluginThis = particleThis.parent;
+	} else if ( args.this.options !== undefined ) {
+		// being called by BreathingHalftone method.
+		pluginThis = args.this;
+	}
+	if ( !pluginThis ) {
+		console.log( args.msg );
+		return;
+	}
+	// logLevel: 'none', 'info', 'debug', 'all',
+	// onlyIf: 	 'particleInitTrace', 'animationTrace'
+	var logLevel = pluginThis.options.logLevel,
+			onlyIf = args.onlyIf || null;
+
+	if ( logLevel == 'none' ) {
+		return;
+	}
+	if ( !onlyIf || logLevel == 'debug' || logLevel == 'all' ) {
+		console.log( args.msg );
+		return;
+	}
+	//-----------------------------------------
+	if ( onlyIf.particleInitTrace ) {
+		//---------------------------------------
+		if ( logLevel !== 'particleInitTrace' ) {
+			return;
+		}
+		pluginThis.tracingParticleInitialization = true;
+		if ( args.outer_index == undefined ) {
+			console.log( args.msg );
+			return;
+		}
+		if ( pluginThis.getParticlesMethod == 'getCartesianGridParticles' ) {
+			var continueTracing = false;
+			// Only trace first and last 5 particle inits for every 4 loops.
+			if ( args.outer_index == 0 ||
+			     args.outer_index == pluginThis.maxInnerIndex ||
+				 	 args.outer_index % 4 == 0 ) {
+				if ( args.inner_index < 5 ||
+			 		 	 args.inner_index >  pluginThis.maxInnerIndex - 4 ) {
+					continueTracing = true;
+				}
+				if ( args.inner_index == 0 ||
+			 		   args.inner_index ==  pluginThis.maxInnerIndex - 4 ) {
+				  console.log( "                                      .............." );
+			  }
+			}
+			if ( !continueTracing ) {
+				return;
+			}
+		}
+	//------------------------------------------------
+	} else if ( onlyIf.animationTrace ) {
+		//----------------------------------------------
+		if ( pluginThis.tracingParticleInitialization ) {
+			pluginThis.isActive = false;
+			return;
+		}
+		if ( logLevel !== 'animationTrace' ) {
+			return;
+		}
+		pluginThis.tracingAnimation = true;
+		if ( pluginThis.renderedLastParticle ) {
+			pluginThis.isActive = false;
+			return;
+		}
+		if ( args.outer_index == undefined ) {
+			console.log( args.msg );
+			return;
+		}
+		var continueTracing = false;
+		// Only trace first and last 5 particle inits for every 4 loops.
+		if ( args.outer_index == 0 ||
+				 args.outer_index == pluginThis.maxInnerIndex ||
+				 args.outer_index % 10 == 0 ) {
+			if ( args.inner_index < 5 ||
+					 args.inner_index >  pluginThis.maxInnerIndex - 4 ) {
+				continueTracing = true;
+			}
+			if ( args.inner_index == 0 ||
+					 args.inner_index ==  pluginThis.maxInnerIndex - 4 ) {
+				console.log( "                                      .............." );
+			}
+		}
+		if ( !continueTracing ) {
+			return;
+		}
+	}
+	console.log( args.msg );
+};
+
+
+/*
+..*3.12: Halftone.update()
+..*3.12a: Halftone.render()
+onlyIf( animationTrace: true )
+*/
+/*
+ 	if ( args.msg.indexOf( '..*3.11' ) != -1 ) {
+		// Halftone.animate.
+		if ( args.this !== undefined ) {
+			var bhThis = args.this;
+					logLevel = bhThis.options.logLevel;
+		}
+		return;
+	} else if ( args.msg.indexOf( '..*3' ) != -1 ) {
+		// being called by BreathingHalftone method.
+		if ( args.this !== undefined ) {
+			var bhThis = args.this;
+					logLevel = bhThis.options.logLevel;
+		}
+		return;
+
+	} else if ( args.msg.indexOf( '..*2' ) != -1 ) {
+		// Particle object.
+		if ( args.this !== undefined && args.this.parent !== undefined ) {
+			// being called from Particle.
+			var pThis = args.this;
+			    bhThis = pThis.parent,
+					logLevel = bhThis.options.logLevel,
+					position = pThis.position;
+		}
+		return;
+	}
+*/
+	/*
+	if ( args.this !== undefined ) {
+		if ( args.this.options !== undefined ) {
+			// being called by BreathingHalftone method.
+			var bhThis = args.this,
+					logLevel = bhThis.options.logLevel;
+		} else if ( args.this.parent !== undefined ) {
+			// being called from Particle.
+			var pThis = args.this,
+			    bhThis = pThis.parent,
+					logLevel = bhThis.options.logLevel,
+					position = pThis.position;
+		}
+	}
+	*/
 
 // sarah_400x364_72dpi.jpg:
 var petrospap_breathing_halftone_image_info = [
