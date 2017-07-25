@@ -69,52 +69,66 @@ push to heroku.
 load heroku version via https://harp-harp-ctx2d-sandbox-bhalf-94037.herokuapp.com/
 
 ===============================
-<div class="canvas-col" style="display: inline-block;">
-  <img id="dragcp" class="halftone" src="./images/mike_stern_CC_600x620.jpg" data-src="./images/mike_stern_CC_600x620.jpg" />
 
-  <div class="buttons-row" style="">
-    <div class="profile-buttons" style="display: inline-block; width: 100px;">
-      <div id="buttons">
-        <a class="if_image_link_clicked" photoTag="mike" action="new_photo"
-           type="color" imgSrc="./images/mike_stern_CC_600x620.jpg"
-        >Mike</a>
-      </div>
-      <div id="buttons">
-        <a class="if_image_link_clicked" photoTag="mike" action="new_photo"
-           type="halftone" imgSrc="./images/mike_stern_CC_halftone.png"
-        >as Halftone</a>
-      </div>
-    </div>
+		// overrides:
+		if ( this.isJustCopy ) {
 
-    <div class="buttons-row" style="">
-      <div class="profile-buttons" style="display: inline-block; width: 100px;">
-        <div id="buttons">
-          <a class="if_image_link_clicked" photoTag="meg" action="new_photo"
-             type="color" imgSrc="./images/meg_CC_422x436.jpg"
-          >Meg</a>
-        </div>
-        <div id="buttons">
-          <a class="if_image_link_clicked" photoTag="meg" action="new_photo"
-             type="halftone" imgSrc="./images/meg_makalou_CC_halftone.png"
-          >as Halftone</a>
-        </div>
-      </div>
-    </div>
+			// ----- Override: options.isAdditive ------------------------------------
+			// this.ctx.fillStyle = this.options.isAdditive ? 'black' : 'white';
+			// this.ctx.globalCompositeOperation = this.options.isAdditive ? 'lighter' : 'darker';
+			//this.channels = !this.options.isAdditive && !supports.darker ?
+			//	[ 'lum' ] : this.options.channels;
+			this.options.isAdditive = false; // this.ctx.fillStyle = 'white';
+																			 // this.ctx.globalCompositeOperation = 'darker';
+																			 // this.channels = this.options.channels;
 
-    <div class="profile-buttons" style="display: inline-block; width: 100px; border-left: 2px black solid;">
-      <div id="buttons">
-        <a id="blue" style="color: red;">Blue</a>
-      </div>
-      <div id="buttons">
-        <a id="black" style="color: red;">Black</a>
-      </div>
-    </div>
+			// ------ Recalc: options.globalCompositeOperation -----------------------
+			this.options.globalCompositeOperation = this.options.isAdditive ? 'lighter' : 'darker';
 
-    <div class="profile-buttons" style="display: inline-block; width: 100px; border-left: 2px black solid;">
-      <div id="buttons">
-        <a id="removehalftone">Remove<br/>&nbsp;Halftone</a>
-      </div>
-    </div>
-  </div>
+			// ------ Override: options.dotSizeThreshold -----------------------------
+			this.options.dotSizeThreshold = 0; // never reject pixell value, i.e.
+																				 //   pixelR_or_g_or_bValue < this.options.dotSizeThreshold
 
-</div>
+			// ------ Override: options.dotSize --------------------------------------
+			this.options.dotSize = 1;	// this.gridSize = this.options.dotSize * this.diagonal;
+		}
+
+    Halftone.prototype.getCartesianGridParticles = function(channel, angle) {
+  		trr_log( { msg: " ..*3.14: Halftone.getCartesianGridParticles() for channel '" + channel + "'. angle '" + angle + "' *", this: this } );
+  		var particles = [];
+  		var w = this.width,
+  			  h = this.height,
+  				gridSize = this.gridSize,
+  				cols = 0,
+  				rows = 0;
+  		if (this.isJustCopy) {
+  			cols = w;
+  			rows = h;
+  		} else {
+  			var diag = Math.max( w, h ) * ROOT_2;
+  			cols = Math.ceil( diag / gridSize );
+  			rows = Math.ceil( diag / gridSize );
+  		}
+
+      Halftone.prototype.getPixelR_or_g_or_bValue = function(x, y, channel) {
+        x = Math.round(x / this.imgScale);
+        y = Math.round(y / this.imgScale);
+        var w = this.imgWidth;
+        var h = this.imgHeight;
+        if (x < 0 || x > w || y < 0 || y > h) {
+          this.particlesRejectedBecauseParticleIsOutOfBounds += 1;
+          return 0;
+        }
+        // this.imgData Is a Uint8ClampedArray representing a one-dimensional
+        // array containing the data in the RGBA order, with integer values between
+        // 0 and 255 (included). sarah.jpg imgData.len = '582400'
+        var pixelIndex = (x + y * w) * 4;
+        var value;
+        if (channel === 'lum') {
+          value = this.getPixelLum( pixelIndex );
+        } else if ( this.isJustCopy ) {
+          value = this.imgData[ pixelIndex ];
+        } else {
+          var index = pixelIndex + channelOffset[channel];
+          value = this.imgData[ index ] / 255;
+        }
