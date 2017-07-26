@@ -80,7 +80,9 @@
 		this.acceleration = new Vector();  // instance of " ..*1a: anonFunc1().Vector"
 		this.naturalSize = properties.naturalSize;
 		this.size = 0;
+		this.targetSize = 0;
 		this.sizeVelocity = 0;
+		this.sizeAcceleration = 0;
 		this.oscSize = 0;
 		this.initSize = 0;
 		this.initSizeVelocity = ( Math.random() * 0.5 + 0.5 ) *
@@ -88,56 +90,91 @@
 		this.oscillationOffset = Math.random() * TAU;
 		this.oscillationMagnitude = Math.random();
 		this.isVisible = false;
-		//trr_log( { msg: " ..*2a: create Particle() for origin.x '" + properties.origin.x +
-		//								"'. origin.y '" + properties.origin.y + "'",
-		//					 this: this, onlyIf: { particleInitTrace: true } } );
+		trr_log( { msg: " ..*2a: create Particle() for origin.x '" + properties.origin.x +
+										"'. origin.y '" + properties.origin.y + "'",
+							 this: this, onlyIf: { tracePixell: true } } );
 	} // end: function Particle()
 
 	Particle.prototype.applyForce = function( force ) {
-		//trr_log( { msg: " ..*2b: Particle.applyForce()", this: this, onlyIf: { animationTrace: true } } );
+		trr_log( { msg: " ..*2b: Particle.applyForce()", this: this, onlyIf: { tracePixell:true } } );
 		this.acceleration.add(force);
 	};
 
 	Particle.prototype.update = function() {
-		if ( !this.isVisible && Math.random() > 0.03) {
-			trr_log( { msg: " ..*2c: Particle.update() REJECTED", this: this, onlyIf: { animationTrace: true } } );
+		if ( this.parent.options.isJustCopy ) {
 			return;
 		}
-		//trr_log( { msg: " ..*2c.1: Particle.update()", this: this, onlyIf: { animationTrace: true } } );
+		if ( !this.isVisible && Math.random() > 0.03) {
+			//trr_log( { msg: " ..*2c: Particle.update() REJECTED because isVisible is false and Math.random() > 0.03 ",
+			//					 this: this, onlyIf: { animationTrace: true } } );
+			return;
+		}
+		trr_log( { msg: " ..*2c.1: Particle.update() Ok to update: now Math.random() < 0.03. Setting isVisible to true." +
+										" animate cycle: " + this.parent.animateCycles,
+										this: this, onlyIf: { tracePixell: true } } );
 		this.isVisible = true;
 		this.applyOriginAttraction();
 		this.velocity.add( this.acceleration );
 		this.velocity.scale( 1 - this.friction );
 		this.position.add( this.velocity );
 		this.acceleration.set( 0, 0 );
-		this.calculateSize();
+		this.calculateSize(); // " ..*2e: Particle.calculateSize()
+		trr_log( { msg: " ..*2c.2: Particle.updated. animate cycle: " + this.parent.animateCycles +
+										". origin.x: " + this.origin.x + ". origin.y: " + this.origin.y +
+										". NOW: dot size: " + this.size + ". targetSize: " + this.targetSize,
+										this: this, onlyIf: { tracePixell: true } } );
 	};
 
 	Particle.prototype.render = function( ctx, channelIndex, particleIndex ) {
-		trr_log( { msg: " ..*2d: Particle.render() position.x = " + this.position.x +
-									  ". position.y = " + this.position.y + ". channelIndex = " +
-										channelIndex + ". particleIndex = " + particleIndex,
+		trr_log( { msg: " ..*2d: Particle.render() animate cycle: " + this.parent.animateCycles +
+										". origin.x: " + this.origin.x + ". origin.y: " + this.origin.y +
+										". NOW: dot size: " + this.size + ". targetSize: " + this.targetSize +
+										". position.x = " + this.position.x + ". position.y = " + this.position.y +
+										". channelIndex = " + channelIndex + ". particleIndex = " + particleIndex,
 										this: this, outerIndex: channelIndex, innerIndex: particleIndex,
 										onlyIf: { animationTrace: true } } );
-		var size = this.size * this.oscSize;
-		var initSize = Math.cos(this.initSize * TAU / 2) * -0.5 + 0.5;
-		size *= initSize;
-		size = Math.max(0, size);
-		ctx.beginPath();
-		ctx.arc(this.position.x, this.position.y, size, 0, TAU);
-		ctx.fill();
-		ctx.closePath();
+		if ( this.parent.options.isJustCopy ) {
+			this.renderJustCopy( ctx, channelIndex, particleIndex );
+			return;
+		} else {
+			var size = this.size * this.oscSize;
+			var initSize = Math.cos(this.initSize * TAU / 2) * -0.5 + 0.5;
+			size *= initSize;
+			size = Math.max(0, size);
+			ctx.beginPath();
+			ctx.arc(this.position.x, this.position.y, size, 0, TAU);
+			ctx.fill();
+			ctx.closePath();
+		}
+		if ( this.size > this.targetSize ) {
+			this.parent.numParticlesRenderedAtTargetSize += 1;
+			trr_log( { msg: " ..*2d.1: Particle.render() Particle size now > targetSize. animate cycle: " + this.parent.animateCycles +
+											". Num Particles[]: " + this.parent.particles.length +
+											". numParticlesRenderedAtTargetSize: " + this.parent.numParticlesRenderedAtTargetSize,
+											this: this, outerIndex: channelIndex, innerIndex: particleIndex,
+											onlyIf: { animationTrace: true } } );
+			// NOTE: animation has started but is not complete, so we need to animate() some more.
+			//if ( this.parent.numParticlesRenderedAtTargetSize >= this.parent.particles.length ) {
+			//	trr_log( { msg: " ..*2d.2: Particle.render() **** STOPPING ANIMATION **** Reached Particle targetSize for all particles. animate cycle: " + this.parent.animateCycles,
+			//									this: this, outerIndex: channelIndex, innerIndex: particleIndex,
+			//									onlyIf: { animationTrace: true } } );
+			//	this.parent.isActive = false;
+			//}
+		}
+	};
+
+	Particle.prototype.renderJustCopy = function( ctx, channelIndex, particleIndex ) {
 	};
 
 	Particle.prototype.calculateSize = function() {
-		//trr_log( { msg: " ..*2e: Particle.calculateSize()", this: this, onlyIf: { animationTrace: true } } );
+		trr_log( { msg: " ..*2e: Particle.calculateSize() animate cycle: " + this.parent.animateCycles, this: this, onlyIf: { tracePixell: true } } );
 		if (this.initSize !== 1) {
 			this.initSize += this.initSizeVelocity;
 			this.initSize = Math.min(1, this.initSize);
 		}
-		var targetSize = this.naturalSize * this.getR_or_g_or_bValue();
-		var sizeAcceleration = (targetSize - this.size) * 0.1;
-		this.sizeVelocity += sizeAcceleration;
+		this.targetSize = this.naturalSize * this.getR_or_g_or_bValue();
+		this.sizeAcceleration = (this.targetSize - this.size) * 0.1;
+		this.sizeVelocity += this.sizeAcceleration;
 		this.sizeVelocity *= ( 1 - 0.3 );
 		this.size += this.sizeVelocity;
 		var now = getNow();
@@ -149,7 +186,7 @@
 	};
 
 	Particle.prototype.getR_or_g_or_bValue = function() {
-		//trr_log( { msg: " ..*2f: Particle.getR_or_g_or_bValue()", this: this, onlyIf: { animationTrace: true } } );
+		trr_log( { msg: " ..*2f: Particle.getR_or_g_or_bValue() animate cycle: " + this.parent.animateCycles, this: this, onlyIf: { tracePixell: true } } );
 		var r_or_g_or_bValue;
 		var position = this.parent.options.isChannelLens ? this.position : this.origin;
 		if ( this.parent.options.isChannelLens ) {
@@ -164,7 +201,7 @@
 	};
 
 	Particle.prototype.applyOriginAttraction = function() {
-		//trr_log( { msg: " ..*2g: Particle.applyOriginAttraction()", this: this, onlyIf: { animationTrace: true } } );
+		trr_log( { msg: " ..*2g: Particle.applyOriginAttraction() animate cycle: " + this.parent.animateCycles, this: this, onlyIf: { tracePixell: true } } );
 		var attraction = Vector.subtract(this.position, this.origin);
 		attraction.scale(-0.02);
 		this.applyForce(attraction);
@@ -269,7 +306,7 @@
 
 	// 1) Get here via 'new BreathingHalftone( el_img, {options} )'
 	function Halftone(img, options){
-		trr_log( { msg: " ..*3.1: creating Halftone() *" } );
+		//trr_log( { msg: " ..*3.1: creating Halftone() *" } );
 		this.options = extend({}, this.constructor.defaults, true);
 		extend(this.options, options, true);
 		this.img = img;
@@ -301,12 +338,14 @@
 		photoTag: 'none',
 		effectType: 'halftone',
 		canvasBackgroundColor: 'black',
-		isJustOne: false,
+		maxAnimationCycles: 'calculated',
+		isTracePixell: false,
+		tracePixellParticles: 1,
 		isJustCopy: false,
 	};
 
 	function makeCanvasAndCtx() {
-		trr_log( { msg: " ..*3.2: makeCanvasAndCtx() *" } );
+		//trr_log( { msg: " ..*3.2: makeCanvasAndCtx() *" } );
 		var canvas = document.createElement('canvas');
 		var ctx = canvas.getContext('2d');
 		return { canvas:canvas,
@@ -326,17 +365,21 @@
 		this.animationLogLines = 0;
 		this.maxAnimationLogLines = 2000;
 		this.animateCycles = 0;
-		this.maxAnimateCycles = ( this.options.maxAnimationCycles == 'calculated' )
-				? 400 : this.options.maxAnimationCycles;
+		this.numParticlesRenderedAtTargetSize = 0;
+		this.previousNumParticlesRenderedAtTargetSize = 0;
+		this.options.maxAnimationCycles = this.options.maxAnimationCycles == 'calculated'
+					? 500
+					: this.options.maxAnimationCycles;
 		trr_log( { msg: " ..*3.3: Halftone.create() isJustCopy:" + this.options.isJustCopy +
-								". isJustOne:" + this.options.isJustOne +
+								". isTracePixell:" + this.options.isTracePixell +
 								". From " + this.options.photoType +
 								" Photo to " + (this.options.channels[0] == 'lum'
 										? 'white'
 										: this.options.effectType == 'halftone_copy'
 												? 'copied'
 												: this.options.channels[0]) +
-								" Halftone particles on a " + this.options.canvasBackgroundColor + " Background. *", this: this } );
+								" Halftone particles on a " + this.options.canvasBackgroundColor +
+								" Background. MaxAnimationCycles: " + this.options.maxAnimationCycles + ". *", this: this } );
 		var canvasAndCtx = makeCanvasAndCtx(); // " ..*3.2: makeCanvasAndCtx() *"
 		this.canvas = canvasAndCtx.canvas;
 		this.ctx = canvasAndCtx.ctx;
@@ -393,8 +436,8 @@
 	// 4) Get here via 'this.onImgLoad'
 	Halftone.prototype.onImgLoad = function() {
 		trr_log( { msg: " ..*3.7: Halftone.onImgLoad() calls getImgData thru animate() *", this: this } );
-		this.getImgData(); " ..*3.8: Halftone.getImgData() *"
-		this.resizeCanvas(); " ..*3.9: Halftone.resizeCanvas() *"
+		this.getImgData(); // " ..*3.8: Halftone.getImgData() *"
+		this.resizeCanvas(); // " ..*3.9: Halftone.resizeCanvas() *"
 		this.getCanvasPosition(); // " ..*3.4: Halftone.getCanvasPosition() *"
 		this.img.style.display = 'none';
 		this.getCanvasPosition(); // " ..*3.4: Halftone.getCanvasPosition() *"
@@ -450,12 +493,9 @@
 	// 5) Get here via 'this.initParticles'
 	Halftone.prototype.initParticles = function() {
 		trr_log( { msg: " ..*3.10: Halftone.initParticles() BEGIN for channels = '" + this.channels +
-										"'. isJustCopy: " + this.options.isJustCopy + ". isJustOne: " +
-										this.options.isJustOne, this: this } );
+										"'. *", this: this } );
 
-		var getParticlesMethod = this.options.isJustCopy ? 'getJustCopyParticles'
-					: this.options.isJustOne ? 'getJustOneParticle'
-					: this.options.isRadial  ? 'getRadialGridParticles'
+		var getParticlesMethod = this.options.isRadial  ? 'getRadialGridParticles'
 							: 'getCartesianGridParticles';
 		this.particles = [];
 		this.channelParticles = {};
@@ -477,21 +517,36 @@
 
 	// 6) Get here via 'this.animate'
 	Halftone.prototype.animate = function() {
-		trr_log( { msg: " ..*3.11: Halftone.animate() Cycle = " + (this.animateCycles + 1) + "*", this: this, onlyIf: { animationTrace: true } } );
+		//trr_log( { msg: " ..*3.11: Halftone.animate() Cycle = " + (this.animateCycles + 1) +
+		//								". maxCycles = " + this.options.maxAnimationCycles + ". *", this: this, onlyIf: { animationTrace: true } } );
 		if ( !this.isActive ) {
 			return;
 		}
-		this.animateCycles += 1;
 		this.update(); // " ..*3.12: Halftone.update() "
 		this.render(); // " ..*3.12a: Halftone.render() "
 		requestAnimationFrame(this.animate.bind( this));
+		this.animateCycles += 1;
+		//----------------------------------------------
+		// Always check for animation loop limits. The only place we do check.
+		if ( this.animateCycles > this.options.maxAnimationCycles ) {
+			trr_log( { msg: " ..*3.10c: **** STOPPED ANIMATION: Because we have made " +
+											this.animateCycles + " animate() cycles. Max is set to " +
+											this.options.maxAnimationCycles + ". Num Particles[]: " + this.particles.length +
+											". numParticlesRenderedAtTargetSize: " + this.numParticlesRenderedAtTargetSize + ". ****",
+											this: this } );
+			this.isActive = false;
+		}
 	};
 
 	Halftone.prototype.update = function() {
-		if ( this.options.isJustCopy || this.options.isJustOne ) {
-			return;
-		}
-		trr_log( { msg: " ..*3.12: Halftone.update() animate cycle " + this.animateCycles + ": Start update loop for " + this.particles.length + " particles *" , this: this, onlyIf: { animationTrace: true } } );
+		trr_log( { msg: " ..*3.12: Halftone.update() animate cycle " + this.animateCycles +
+										": Start update loop for " + this.particles.length +
+										" particles. Particles Rendered To Size since last cycle: " +
+										this.numParticlesRenderedAtTargetSize +
+										", previous: " + this.previousNumParticlesRenderedAtTargetSize + ". *" ,
+							 this: this, animateCycles: this.animateCycles, onlyIf: { animationTrace: true } } );
+		this.previousNumParticlesRenderedAtTargetSize = this.numParticlesRenderedAtTargetSize;
+		this.numParticlesRenderedAtTargetSize = 0;
 		for (var i=0, len = this.particles.length; i < len; i++) {
 			var particle = this.particles[i];
 			particle.update(); // " ..*2c: Particle.update()"
@@ -499,13 +554,6 @@
 	};
 
 	Halftone.prototype.render = function() {
-		if ( this.options.isJustCopy ) {
-			this.renderJustCopy();
-			return;
-		} else if ( this.options.isJustOne ) {
-			this.renderJustOne();
-			return;
-		}
 		this.ctx.globalCompositeOperation = 'source-over';
 		// NOTE: ?? seems to need to be 'black' if we set canvas.backgroundColor to 'white' earlier.
 		// was: this.options.isAdditive ? 'black' : 'white';
@@ -515,7 +563,8 @@
 		this.ctx.fillRect( 0, 0, this.width, this.height );
 		this.ctx.globalCompositeOperation = this.options.isAdditive ? 'lighter' : 'darker';
 		var loop_limit = this.channels.length;
-		trr_log( { msg: " ..*3.12a: Halftone.render() animate cycle " + this.animateCycles + ": Start render loop for " + this.channels.length + " channels *" , this: this, onlyIf: { animationTrace: true } } );
+		trr_log( { msg: " ..*3.12a: Halftone.render() animate cycle " + this.animateCycles + ": Start render loop for " + this.channels.length + " channels *" ,
+							 this: this, onlyIf: { animationTrace: true } } );
 		for ( var i=0; i < loop_limit; i++ ) {
 			var channel = this.channels[i];
 			this.renderGrid( channel, i ); // " ..*3.13: Halftone.renderGrid() *"
@@ -538,7 +587,7 @@
 	};
 
 	Halftone.prototype.renderGrid = function( channel, channelIndex ) {
-		// trr_log( { msg: " ..*3.13: Halftone.renderGrid() *" , this: this, onlyIf: { animationTrace: true } } );
+		trr_log( { msg: " ..*3.13: Halftone.renderGrid() *" , this: this, onlyIf: { tracePixell: true } } );
 		var proxy = this.proxyCanvases[ channel ];
 		// NOTE: init canvas with one color, i.e. the 'canvasBackgroundColor'
 		// this.imgDataBackgroundRGBA
@@ -553,37 +602,50 @@
 		proxy.ctx.fillStyle = this.options.dotsColor == 'calculated'
 				? channelFillStyles[ blend ][ channel ] : this.options.dotsColor;
 		var particles = this.channelParticles[ channel ];
-
-		trr_log( { msg: " ..*3.13a: Halftone.renderGrid() LOOP START for animate cycle " + this.animateCycles + ": channel '" + channel + "'. For " + particles.length + " particles. *" , this: this, onlyIf: { animationTrace: true } } );
 		var loop_limit = particles.length;
 		this.maxRenderGridOuterIndex = this.channels.length -1;
 		this.maxRenderGridInnerIndex = loop_limit;
-		for ( var i=0; i < loop_limit; i++ ) {
-			var particle = particles[i];
-			particle.render(proxy.ctx, channelIndex, i); // " ..*2d: Particle.render()"
+		trr_log( { msg: " ..*3.13a: Halftone.renderGrid() LOOP START for animate cycle " +
+										this.animateCycles + ": channel '" + channel + "'. For " + particles.length + " particles. *" , this: this, onlyIf: { animationTrace: true } } );
+		if ( particles.length == 0 ) {
+			trr_log( { msg: " ..*3.13b: Halftone.renderGrid() LOOP and animation TERMINATED because particles.len = 0 ", this: this } );
+			this.isActive = false; // Stop animation.
+			return;
+		} else {
+				for ( var i=0; i < loop_limit; i++ ) {
+					var particle = particles[i];
+					particle.render(proxy.ctx, channelIndex, i); // " ..*2d: Particle.render()"
+				}
 		}
-		trr_log( { msg: " ..*3.13b: Halftone.renderGrid() LOOP END for animate cycle " + this.animateCycles + ": going to call 'this.ctx.drawImage(proxy.canvas, 0, 0)' *" , this: this, onlyIf: { animationTrace: true } } );
+		trr_log( { msg: " ..*3.13c: Halftone.renderGrid() LOOP END for animate cycle " + this.animateCycles + ": going to call 'this.ctx.drawImage(proxy.canvas, 0, 0)' *" , this: this, onlyIf: { tracePixell: true } } );
 		this.ctx.drawImage(proxy.canvas, 0, 0);
-		//trr_log( { msg: " ..*3.13c: Halftone.renderGrid() DONE *" , this: this, onlyIf: { animationTrace: true } } );
+		trr_log( { msg: " ..*3.13d: Halftone.renderGrid() DONE *" , this: this, onlyIf: { tracePixell: true } } );
 	};
 
 	Halftone.prototype.getCartesianGridParticles = function(channel, angle) {
 		trr_log( { msg: " ..*3.14: Halftone.getCartesianGridParticles() for channel '" + channel + "'. angle '" + angle + "' *", this: this } );
 		var particles = [];
 		var w = this.width,
-			  h = this.height,
+				h = this.height,
 				gridSize = this.gridSize,
+				cols = 0,
+				rows = 0,
 				diag = Math.max( w, h ) * ROOT_2,
-				cols = Math.ceil( diag / gridSize ),
+				cols = Math.ceil( diag / gridSize );
 				rows = Math.ceil( diag / gridSize );
 		this.maxNumOfParticles =  rows * cols;
 		this.maxParticlesInitOuterIndex = rows -1;
 		this.maxParticlesInitInnerIndex = cols -1;
-		trr_log( { msg: " ..*3.14a: CartesianGridParticles(): BEGIN LOOP: gridSize = " + this.gridSize +
-							  ". rows = " + rows + ". columns = " + cols +
-								". Max number of particles = " + this.maxNumOfParticles +
-								". *", this: this } );
+		trr_log( { msg: " ..*3.14a: CartesianGridParticles(): BEGIN LOOP: isJustCopy: " +
+									  this.options.isJustCopy + ". isTracePixell: " + this.options.isTracePixell +
+										". gridSize = " + this.gridSize + ". rows = " + rows +
+										". columns = " + cols + ". Max number of particles = " +
+										this.maxNumOfParticles + ". *", this: this } );
+		var isTerminateLoop = false;
 		for ( var row = 0; row < rows; row++ ) {
+			if ( isTerminateLoop) {
+				break;
+			}
 			for ( var col = 0; col < cols; col++ ) {
 				var x1 = ( col + 0.5 ) * gridSize;
 				var y1 = ( row + 0.5 ) * gridSize;
@@ -601,6 +663,11 @@
 				var particle = this.initParticle(channel, x2, y2, row, col); // " ..*3.15: Halftone.initParticle()"
 				if ( particle ) {
 					particles.push(particle);
+					if ( this.options.isTracePixell &&
+							 particles.length == this.options.tracePixellParticles ) {
+						isTerminateLoop = true;
+						break;
+					}
 				}
 			}
 		}
@@ -640,12 +707,6 @@
 	};
 
 	Halftone.prototype.initParticle = function(channel, x, y, outer_index, inner_index) {
-		trr_log( { msg: " ..*3.15: Halftone.initParticle() for channel '" +
-										channel + "'. x '" + x + "'. y '" + y +
-										"'. outer_index: '" + outer_index + "'. inner_index: '" + inner_index + "'. *" ,
-							 this: this, outer_index: outer_index, inner_index: inner_index,
-							 onlyIf: { particleInitTrace: true }
-						 } );
 		var pixelR_or_g_or_bValue = this.getPixelR_or_g_or_bValue(x, y, channel);
 		if ( pixelR_or_g_or_bValue == 0 ) {
 			return;
@@ -657,6 +718,12 @@
 			this.particlesRejectedBecausePixelValueLessThanDotSizeThreshold += 1;
 			return;
 		}
+		trr_log( { msg: " ..*3.15: Halftone.initParticle() for channel '" +
+										channel + "'. x '" + x + "'. y '" + y +
+										"'. outer_index: '" + outer_index + "'. inner_index: '" + inner_index + "'. *" ,
+							 this: this, outer_index: outer_index, inner_index: inner_index,
+							 onlyIf: { particleInitTrace: true, tracePixell: true }
+						 } );
 		return new Particle( { // make instance of " ..*2a: create Particle()"
 			channel: channel,
 			parent: this,
@@ -675,6 +742,13 @@
 		var h = this.imgHeight;
 		if (x < 0 || x > w || y < 0 || y > h) {
 			this.particlesRejectedBecauseParticleIsOutOfBounds += 1;
+			// NOTE: generates too many log msgs even for tracePixell setting.
+			//trr_log( { msg: " ..*3.16: Halftone.getPixelR_or_g_or_bValue() REJECTED pixell for channel '" +
+			//								channel + "' at x: '" + x + "'. y: '" + y +
+			//								"'. Because it is out of bounds: x < 0 or y < 0 or x > imgWidth: '" +
+			//								w + "'. Or y > imgHeight: '" + h + "'. *" ,
+			//					 this: this, onlyIf: { tracePixell: true }
+			//				 } );
 			return 0;
 		}
 		// this.imgData Is a Uint8ClampedArray representing a one-dimensional
@@ -684,6 +758,8 @@
 		var value;
 		if (channel === 'lum') {
 			value = this.getPixelLum( pixelIndex );
+		} else if ( this.options.isJustCopy || this.options.isTracePixell ) {
+			value = this.imgData[ pixelIndex ];
 		} else {
 			var index = pixelIndex + channelOffset[channel];
 			value = this.imgData[ index ] / 255;
@@ -719,7 +795,10 @@
 	window.BreathingHalftone = Halftone;
 })(window); // end anonymous function3()
 
+
+//==================================================
 function trr_log( args ) {
+//==================================================
 	if ( args.this == undefined ) {
 		console.log( args.msg );
 		return;
@@ -738,87 +817,126 @@ function trr_log( args ) {
 		console.log( args.msg );
 		return;
 	}
-	// logLevel: 'none', 'info', 'debug', 'all',
+	// logLevel: 'none', 'info', 'all',
 	// onlyIf: 	 'particleInitTrace', 'animationTrace'
-	var logLevel = pluginThis.options.logLevel,
-			onlyIf = args.onlyIf || null;
+	var isTracePixell = pluginThis.options.isTracePixell,
+			isJustCopy = pluginThis.options.isJustCopy,
+			logLevel = ( isTracePixell ? 'tracePixell'
+									 : isJustCopy ? ' justCopy'
+									 : pluginThis.options.logLevel ),
+			onlyIf = args.onlyIf || {};
 
 	if ( logLevel == 'none' ) {
 		return;
 	}
-	if ( !onlyIf || logLevel == 'debug' || logLevel == 'all' ) {
+	if ( args.onlyIf == undefined &&
+			 ( logLevel == 'all' || logLevel == 'info' ) ) {
 		console.log( args.msg );
 		return;
 	}
+
 	//-----------------------------------------
-	if ( onlyIf.particleInitTrace ) {
-		//---------------------------------------
-		if ( logLevel !== 'particleInitTrace' ) {
-			return;
-		}
-		pluginThis.tracingParticleInitialization = true;
-		if ( args.outer_index == undefined ) {
+	if ( ( onlyIf.tracePixell && logLevel == 'tracePixell' ) ||
+			 ( onlyIf.justCopy && logLevel == 'justCopy' ) ) {
 			console.log( args.msg );
 			return;
+	}
+	var loggedAsParticleInitTrace = trr_log_particleMsgs( args, pluginThis, particleThis, isTracePixell, isJustCopy, logLevel, onlyIf, false );
+	var loggedAsAnimationTrace = trr_log_animationMsgs( args, pluginThis, particleThis, isTracePixell, isJustCopy, logLevel, onlyIf, loggedAsParticleInitTrace );
+	if ( logLevel == 'tracePixell' && pluginThis.particles !== undefined &&
+	     pluginThis.numParticlesRenderedAtTargetSize >= pluginThis.particles.length ) {
+		// NOTE: animation rendering requests are complete? but animation is not?, so we need to animate() some more.
+		var minCycles = pluginThis.options.maxAnimationCycles - 50,
+		    newMaxCycles = pluginThis.animateCycles + 50;
+		if ( pluginThis.animateCycles < minCycles ) {
+			console.log( " **** ADJUSTING ANIMATION LIMITS from " + pluginThis.options.maxAnimationCycles +
+									 " to " + newMaxCycles + " because we have reached Particle targetSize for all particles. animate cycle: " + pluginThis.animateCycles );
+			pluginThis.options.maxAnimationCycles = newMaxCycles;
 		}
-		if ( pluginThis.getParticlesMethod == 'getCartesianGridParticles' ) {
-			var continueTracing = false;
+	}
+};
+
+//=================================
+function trr_log_particleMsgs( args, pluginThis, particleThis, isTracePixell, isJustCopy, logLevel, onlyIf, isAlreadyLogged ) {
+//=================================
+  var loggedAsParticleInitTrace = false;
+	//-----------------------------------------
+	if ( ( onlyIf.particleInitTrace && logLevel == 'particleInitTrace' ) ||
+       ( logLevel == 'tracePixell' || logLevel == 'justCopy' ) ) {
+		//---------------------------------------
+		pluginThis.tracingParticleInitialization = true;
+		var logIt = false;
+		if ( args.outer_index == undefined ) {
+			logIt = true;
+		} else if ( pluginThis.getParticlesMethod == 'getCartesianGridParticles' ) {
 			// Only trace first and last 5 particle inits for every 4 loops.
 			if ( args.outer_index == 0 ||
 			     args.outer_index == pluginThis.maxParticlesInitOuterIndex ||
 				 	 args.outer_index % 4 == 0 ) {
 				if ( args.inner_index < 5 ||
 			 		 	 args.inner_index >  pluginThis.maxParticlesInitInnerIndex - 4 ) {
-					continueTracing = true;
+					logIt = true;
 				}
 				if ( args.inner_index == 0 ||
 			 		   args.inner_index ==  pluginThis.maxParticlesInitInnerIndex - 4 ) {
 				  console.log( "                                      .............." );
 			  }
 			}
-			if ( !continueTracing ) {
-				return;
-			}
+		}
+		if ( logIt ) {
+			console.log( args.msg );
+			loggedAsParticleInitTrace = true;
 			pluginThis.particleInitLogLines += 1;
 		}
-	//------------------------------------------------
-	} else if ( onlyIf.animationTrace ) {
-		//----------------------------------------------
-		if ( pluginThis.tracingParticleInitialization ||
-				 pluginThis.animateCycles > pluginThis.maxAnimateCycles ) {
-			console.log( "**** STOPPED ANIMATION because " + (pluginThis.tracingParticleInitialization
-											? "we were tracing Particle Initialization"
-											: "we have made " + pluginThis.animateCycles + " animate() cycles. Max is set to " + pluginThis.maxAnimateCycles) +
-									 ". ****");
-			pluginThis.isActive = false;
-			return;
-		}
-		if ( logLevel !== 'animationTrace' ) {
-			return;
-		}
-		pluginThis.tracingAnimation = true;
-		if ( args.outerIndex == undefined ) {
-			console.log( args.msg );
-			return;
-		}
-		var continueTracing = false;
-		// Only trace first 5 particle animation updates for every 50 particles.
-		if ( (args.innerIndex < 5 || args.innerIndex > pluginThis.maxRenderGridInnerIndex - 4) ||  // first 5 or last 5
-				 args.innerIndex % 50 == 0 ) { // every 50
-			continueTracing = true;
-		}
-		if ( args.innerIndex == 0 ) {
-				console.log( "                                      .............." );
-		}
-		if ( !continueTracing ||
-				 pluginThis.animationLogLines > pluginThis.maxAnimationLogLines ) {
-			return;
-		}
-		pluginThis.animationLogLines += 1;
 	}
-	console.log( args.msg );
+	return loggedAsParticleInitTrace;
 };
 
+
+//=================================
+function trr_log_animationMsgs( args, pluginThis, particleThis, isTracePixell, isJustCopy, logLevel, onlyIf, isAlreadyLogged ) {
+//=================================
+	var loggedAsAnimationTrace = false;
+	//-----------------------------------------
+	if ( ( onlyIf.animationTrace && logLevel == 'animationTrace' ) ||
+	     ( args.animateCycles !== undefined && logLevel == 'info' ) ||
+			 ( logLevel == 'tracePixell' || logLevel == 'justCopy' ) ) {
+		//-----------------------------------------
+		pluginThis.tracingAnimation = true;
+		var logIt = false;
+
+		if ( args.outerIndex == undefined && args.animateCycles == undefined ) {
+			logIt = true;
+		} else {
+			if ( args.animateCycles !== undefined ) {
+				// Only trace first animation cycles of every 20 loops.
+				if ( args.animateCycles % 20 == 1 ) {
+					logIt = true;
+				}
+			} else if ( args.outerIndex !== undefined ) {
+				// Only trace first 5 particle animation updates for every 50 particles.
+				if ( (args.innerIndex < 5 || args.innerIndex > pluginThis.maxRenderGridInnerIndex - 4) ||  // first 5 or last 5
+							args.innerIndex % 50 == 0 ) { // every 50
+					logIt = true;
+				}
+				if ( args.innerIndex == 0 ) {
+						console.log( "                                      .............." );
+				}
+			}
+		}
+
+		if ( logIt &&
+				 pluginThis.animationLogLines < pluginThis.maxAnimationLogLines ) {
+			console.log( args.msg );
+		 	loggedAsAnimationTrace = true;
+			pluginThis.animationLogLines += 1;
+		}
+	}
+	return loggedAsAnimationTrace;
+};
+
+
+//==============================================================================
 // sarah_400x364_72dpi.jpg:
 var petrospap_breathing_halftone_image_info = [
 

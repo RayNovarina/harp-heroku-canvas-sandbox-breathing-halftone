@@ -11,8 +11,8 @@
 
 <body>
 	<div class="canvas-col" style="display: inline-block;">
-		<img id="dragcp" class="halftone" photoType="color" photoTag="mike"
-				 src="./images/mike_stern_CC_600x620.jpg" data-src="./images/mike_stern_CC_600x620.jpg" />
+		<img id="dragcp" class="halftone" photoType="color" photoTag="meg" effectType="halftone"
+				 src="./images/meg_CC_422x436.jpg" data-src="./images/meg_CC_422x436.jpg" />
 
 		<div class="buttons-row" style="">
 			<div class="profile-buttons" style="display: inline-block; width: 90px;">
@@ -145,9 +145,9 @@
 									"'. effectType: " + options.effectType +
 									"'. canvasBackgroundColor: " + options.canvasBackgroundColor +
 									"'. dotsColor: " + options.dotsColor +
-									"'. justOne: " + options.justOne +
+									"'. tracePixell: " + options.isTracePixell +
 									"'. *");
-			 	options.logLevel = 'info'; // logLevel: 'none', 'info', 'debug', 'all',
+			 	options.logLevel = 'info'; // logLevel: 'none', 'info', 'all',
 							 										 // 'particleInitTrace', 'animationTrace'
 				halftone = new BreathingHalftone( img, options );
 			}
@@ -178,6 +178,7 @@
 					canvasBackgroundColor: 'white',
 					dotsColor: 'calculated',
 					maxAnimationCycles: 'calculated',
+					isTracePixell: false,
 				});
 			});
 
@@ -198,21 +199,35 @@
 					canvasBackgroundColor: "#E7F1F7",
 					dotsColor: '#70C0EF',
 					maxAnimationCycles: 600,
+					isTracePixell: false,
 				});
 			});
 
 			$('#tracePixell').click( function() {
+				// NOTE: if logLevel = 'none' then no trace, just restricted num of
+				// pixells selected via tracePixellParticles. Some of those may be rejected
+				// due to their rgb values.
+				// If logLevel = 'particleInitTrace' only the initParticles() loop is traced.
 				console.log(" ..*0e: html.$('#tracePixell').click() *");
 				removeHalftone();
 				var img = document.querySelector('#dragcp'),
 						$img = jQuery(img);
 				addHalftone( img, {
-					channels: [ 'blue' ],
-					photoTag: $img.attr('photoTag'),
-					isJustOne: true,
+					isTracePixell: true,
+					tracePixellParticles: 1,
 					position_x: 0,
 					position_y: 0,
 					dotsColor: 'red',
+					channels: [ 'blue' ],
+					photoTag: $img.attr('photoTag'),
+					photoType: $img.attr('photoType'),
+					effectType: "halftone",
+					canvasBackgroundColor: 'white',
+					maxAnimationCycles: 300,
+					dotSize: 1/100,
+					oscAmplitude: 0,
+					initVelocity: 1,
+					isAdditive: true,
 				});
 			});
 

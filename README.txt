@@ -69,66 +69,101 @@ push to heroku.
 load heroku version via https://harp-harp-ctx2d-sandbox-bhalf-94037.herokuapp.com/
 
 ===============================
+if ( isJustOne ) {
+  onlyIf = onlyIf || {  };
+  if ( onlyIf.justOne ) {
+    if ( onlyIf.particleInitTrace == undefined &&
+         onlyIf.animationTrace == undefined ) {
 
-		// overrides:
-		if ( this.isJustCopy ) {
+    }
+  //onlyIf.particleInitTrace = true;
+  onlyIf.animationTrace = true;
+}
 
-			// ----- Override: options.isAdditive ------------------------------------
-			// this.ctx.fillStyle = this.options.isAdditive ? 'black' : 'white';
-			// this.ctx.globalCompositeOperation = this.options.isAdditive ? 'lighter' : 'darker';
-			//this.channels = !this.options.isAdditive && !supports.darker ?
-			//	[ 'lum' ] : this.options.channels;
-			this.options.isAdditive = false; // this.ctx.fillStyle = 'white';
-																			 // this.ctx.globalCompositeOperation = 'darker';
-																			 // this.channels = this.options.channels;
+} else if ( onlyIf.animationTrace ) {
+  //----------------------------------------------
+  // Always check for animation loop limits. The only place we do check.
+  if ( ( !isTracePixell && pluginThis.tracingParticleInitialization ) ||
+    pluginThis.animateCycles > pluginThis.options.maxAnimationCycles ) {
+    console.log( "**** STOPPED ANIMATION: " +
+        ( pluginThis.tracingParticleInitialization
+          ? "Because we were tracing Particle Initialization. "
+          : "" ) +
+        ( pluginThis.animateCycles > pluginThis.options.maxAnimationCycles
+          ? "Because we have made " + pluginThis.animateCycles + " animate() cycles. Max is set to " + pluginThis.options.maxAnimationCycles
+          : "" ) +
+        ". Num Particles[]: " + pluginThis.particles.length +
+        ". numParticlesRenderedAtTargetSize: " + pluginThis.numParticlesRenderedAtTargetSize,
+        ". ****");
+    pluginThis.isActive = false;
+    return;
+  }
+  if ( !isTracePixell && args.animateCycles == undefined && logLevel !== 'animationTrace' ) {
+    return;
+  }
 
-			// ------ Recalc: options.globalCompositeOperation -----------------------
-			this.options.globalCompositeOperation = this.options.isAdditive ? 'lighter' : 'darker';
-
-			// ------ Override: options.dotSizeThreshold -----------------------------
-			this.options.dotSizeThreshold = 0; // never reject pixell value, i.e.
-																				 //   pixelR_or_g_or_bValue < this.options.dotSizeThreshold
-
-			// ------ Override: options.dotSize --------------------------------------
-			this.options.dotSize = 1;	// this.gridSize = this.options.dotSize * this.diagonal;
+  =================
+  var loggedAsParticleInitTrace = false;
+	//-----------------------------------------
+	if ( ( onlyIf.particleInitTrace && logLevel == 'particleInitTrace' ) ||
+       ( logLevel == 'tracePixell' || logLevel == 'justCopy' ) ) {
+		//---------------------------------------
+		pluginThis.tracingParticleInitialization = true;
+		var logIt = false;
+		if ( args.outer_index == undefined ) {
+			logIt = true;
+		} else if ( pluginThis.getParticlesMethod == 'getCartesianGridParticles' ) {
+			// Only trace first and last 5 particle inits for every 4 loops.
+			if ( args.outer_index == 0 ||
+			     args.outer_index == pluginThis.maxParticlesInitOuterIndex ||
+				 	 args.outer_index % 4 == 0 ) {
+				if ( args.inner_index < 5 ||
+			 		 	 args.inner_index >  pluginThis.maxParticlesInitInnerIndex - 4 ) {
+					logIt = true;
+				}
+				if ( args.inner_index == 0 ||
+			 		   args.inner_index ==  pluginThis.maxParticlesInitInnerIndex - 4 ) {
+				  console.log( "                                      .............." );
+			  }
+			}
 		}
+		if ( logIt ) {
+			console.log( args.msg );
+			loggedAsParticleInitTrace = true;
+			pluginThis.particleInitLogLines += 1;
+			return;
+		}
+	}
 
-    Halftone.prototype.getCartesianGridParticles = function(channel, angle) {
-  		trr_log( { msg: " ..*3.14: Halftone.getCartesianGridParticles() for channel '" + channel + "'. angle '" + angle + "' *", this: this } );
-  		var particles = [];
-  		var w = this.width,
-  			  h = this.height,
-  				gridSize = this.gridSize,
-  				cols = 0,
-  				rows = 0;
-  		if (this.isJustCopy) {
-  			cols = w;
-  			rows = h;
-  		} else {
-  			var diag = Math.max( w, h ) * ROOT_2;
-  			cols = Math.ceil( diag / gridSize );
-  			rows = Math.ceil( diag / gridSize );
-  		}
-
-      Halftone.prototype.getPixelR_or_g_or_bValue = function(x, y, channel) {
-        x = Math.round(x / this.imgScale);
-        y = Math.round(y / this.imgScale);
-        var w = this.imgWidth;
-        var h = this.imgHeight;
-        if (x < 0 || x > w || y < 0 || y > h) {
-          this.particlesRejectedBecauseParticleIsOutOfBounds += 1;
-          return 0;
-        }
-        // this.imgData Is a Uint8ClampedArray representing a one-dimensional
-        // array containing the data in the RGBA order, with integer values between
-        // 0 and 255 (included). sarah.jpg imgData.len = '582400'
-        var pixelIndex = (x + y * w) * 4;
-        var value;
-        if (channel === 'lum') {
-          value = this.getPixelLum( pixelIndex );
-        } else if ( this.isJustCopy ) {
-          value = this.imgData[ pixelIndex ];
-        } else {
-          var index = pixelIndex + channelOffset[channel];
-          value = this.imgData[ index ] / 255;
-        }
+	var loggedAsAnimationTrace = false;
+	if ( ( onlyIf.animationTrace && logLevel == 'animationTrace' ) ||
+	     ( logLevel == 'tracePixell' || logLevel == 'justCopy' ) ) {
+		var logIt = false;
+		if ( args.outerIndex == undefined && args.animateCycles == undefined ) {
+			logIt = true;
+		} else {
+			pluginThis.tracingAnimation = true;
+			if ( args.animateCycles !== undefined ) {
+				// Only trace first animation cycles of every 20 loops.
+				if ( args.animateCycles % 20 == 1 ) {
+					logIt = true;
+				}
+			} else if ( args.outerIndex !== undefined ) {
+				// Only trace first 5 particle animation updates for every 50 particles.
+				if ( (args.innerIndex < 5 || args.innerIndex > pluginThis.maxRenderGridInnerIndex - 4) ||  // first 5 or last 5
+				 	  	args.innerIndex % 50 == 0 ) { // every 50
+					logIt = true;
+				}
+				if ( args.innerIndex == 0 ) {
+						console.log( "                                      .............." );
+				}
+			}
+		}
+		if ( logIt &&
+				 pluginThis.animationLogLines < pluginThis.maxAnimationLogLines ) {
+				 pluginThis.animationLogLines += 1;
+				 loggedAsAnimationTrace = true;
+			 	 console.log( args.msg );
+				 return;
+		}
+	}
