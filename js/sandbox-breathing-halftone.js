@@ -75,6 +75,8 @@
 		this.origin = properties.origin;
 		this.parent = properties.parent;
 		this.friction = properties.friction;
+		this.outerIndex = properties.outerIndex;
+		this.innerIndex = properties.innerIndex;
 		this.position = Vector.copy( this.origin );
 		this.velocity = new Vector(); // instance of " ..*1a: anonFunc1().Vector"
 		this.acceleration = new Vector();  // instance of " ..*1a: anonFunc1().Vector"
@@ -85,23 +87,28 @@
 		this.sizeAcceleration = 0;
 		this.oscSize = 0;
 		this.initSize = 0;
-		this.initSizeVelocity = ( Math.random() * 0.5 + 0.5 ) *
-		this.parent.options.initVelocity;
+		this.initSizeVelocity = ( Math.random() * 0.5 + 0.5 ) * this.parent.options.initVelocity;
 		this.oscillationOffset = Math.random() * TAU;
 		this.oscillationMagnitude = Math.random();
 		this.isVisible = false;
-		trr_log( { msg: " ..*2a: create Particle() for origin.x '" + properties.origin.x +
-										"'. origin.y '" + properties.origin.y + "'",
-							 this: this, onlyIf: { tracePixell: true } } );
+		if ( this.parent.options.logLevel !== 'none' && !this.parent.options.isTracePixell ) {
+			trr_log( { msg: " ..*2a: create Particle() for origin.x '" + properties.origin.x +
+											"'. origin.y '" + properties.origin.y + "'",
+							 	this: this, outer_index: this.outerIndex, inner_index: this.innerIndex,
+							 	onlyIf: { tracePixell: true } } );
+		}
 	} // end: function Particle()
 
 	Particle.prototype.applyForce = function( force ) {
-		trr_log( { msg: " ..*2b: Particle.applyForce()", this: this, onlyIf: { tracePixell:true } } );
+		if ( this.parent.options.logLevel !== 'none' && !this.parent.options.isTracePixell ) {
+			trr_log( { msg: " ..*2b: Particle.applyForce()", this: this, onlyIf: { tracePixell:true } } );
+		}
 		this.acceleration.add(force);
 	};
 
 	Particle.prototype.update = function() {
 		if ( this.parent.options.isJustCopy ) {
+			this.isVisible = true;
 			return;
 		}
 		if ( !this.isVisible && Math.random() > 0.03) {
@@ -109,9 +116,11 @@
 			//					 this: this, onlyIf: { animationTrace: true } } );
 			return;
 		}
-		trr_log( { msg: " ..*2c.1: Particle.update() Ok to update: now Math.random() < 0.03. Setting isVisible to true." +
-										" animate cycle: " + this.parent.animateCycles,
-										this: this, onlyIf: { tracePixell: true } } );
+		if ( this.parent.options.logLevel !== 'none' && !this.parent.options.isTracePixell ) {
+			trr_log( { msg: " ..*2c.1: Particle.update() Ok to update: now Math.random() < 0.03. Setting isVisible to true." +
+											" animate cycle: " + this.parent.animateCycles,
+											this: this, onlyIf: { tracePixell: true } } );
+		}
 		this.isVisible = true;
 		this.applyOriginAttraction();
 		this.velocity.add( this.acceleration );
@@ -119,20 +128,27 @@
 		this.position.add( this.velocity );
 		this.acceleration.set( 0, 0 );
 		this.calculateSize(); // " ..*2e: Particle.calculateSize()
-		trr_log( { msg: " ..*2c.2: Particle.updated. animate cycle: " + this.parent.animateCycles +
-										". origin.x: " + this.origin.x + ". origin.y: " + this.origin.y +
-										". NOW: dot size: " + this.size + ". targetSize: " + this.targetSize,
-										this: this, onlyIf: { tracePixell: true } } );
+		if ( this.parent.options.logLevel !== 'none' && !this.parent.options.isTracePixell ) {
+			trr_log( { msg: " ..*2c.2: Particle.updated. animate cycle: " + this.parent.animateCycles +
+											". origin.x: " + this.origin.x + ". origin.y: " + this.origin.y +
+											". NOW: dot size: " + this.size + ". targetSize: " + this.targetSize,
+											this: this, onlyIf: { tracePixell: true } } );
+		}
 	};
 
+	// For every extracted pixel we kept, i.e. particles[], draw a dot centered
+	// at its original location in the source image file.
+	// i.e. postion.x, position.y. Diameter is 'size' and color determined earlier.
 	Particle.prototype.render = function( ctx, channelIndex, particleIndex ) {
-		trr_log( { msg: " ..*2d: Particle.render() animate cycle: " + this.parent.animateCycles +
-										". origin.x: " + this.origin.x + ". origin.y: " + this.origin.y +
-										". NOW: dot size: " + this.size + ". targetSize: " + this.targetSize +
-										". position.x = " + this.position.x + ". position.y = " + this.position.y +
-										". channelIndex = " + channelIndex + ". particleIndex = " + particleIndex,
-										this: this, outerIndex: channelIndex, innerIndex: particleIndex,
-										onlyIf: { animationTrace: true } } );
+		if ( this.parent.options.logLevel !== 'none' && !this.parent.options.isTracePixell ) {
+			trr_log( { msg: " ..*2d: Particle.render() animate cycle: " + this.parent.animateCycles +
+											". origin.x: " + this.origin.x + ". origin.y: " + this.origin.y +
+											". NOW: dot size: " + this.size + ". targetSize: " + this.targetSize +
+											". position.x = " + this.position.x + ". position.y = " + this.position.y +
+											". channelIndex = " + channelIndex + ". particleIndex = " + particleIndex,
+											this: this, outer_index: channelIndex, inner_index: particleIndex,
+											onlyIf: { animationTrace: true } } );
+		}
 		if ( this.parent.options.isJustCopy ) {
 			this.renderJustCopy( ctx, channelIndex, particleIndex );
 			return;
@@ -141,6 +157,7 @@
 			var initSize = Math.cos(this.initSize * TAU / 2) * -0.5 + 0.5;
 			size *= initSize;
 			size = Math.max(0, size);
+			// Draw a dot centered at postion.x, position.y. Diameter is 'size'.
 			ctx.beginPath();
 			ctx.arc(this.position.x, this.position.y, size, 0, TAU);
 			ctx.fill();
@@ -148,26 +165,31 @@
 		}
 		if ( this.size > this.targetSize ) {
 			this.parent.numParticlesRenderedAtTargetSize += 1;
-			trr_log( { msg: " ..*2d.1: Particle.render() Particle size now > targetSize. animate cycle: " + this.parent.animateCycles +
-											". Num Particles[]: " + this.parent.particles.length +
-											". numParticlesRenderedAtTargetSize: " + this.parent.numParticlesRenderedAtTargetSize,
-											this: this, outerIndex: channelIndex, innerIndex: particleIndex,
-											onlyIf: { animationTrace: true } } );
-			// NOTE: animation has started but is not complete, so we need to animate() some more.
-			//if ( this.parent.numParticlesRenderedAtTargetSize >= this.parent.particles.length ) {
-			//	trr_log( { msg: " ..*2d.2: Particle.render() **** STOPPING ANIMATION **** Reached Particle targetSize for all particles. animate cycle: " + this.parent.animateCycles,
-			//									this: this, outerIndex: channelIndex, innerIndex: particleIndex,
-			//									onlyIf: { animationTrace: true } } );
-			//	this.parent.isActive = false;
-			//}
+			if ( this.parent.options.logLevel !== 'none' && !this.parent.options.isTracePixell ) {
+				trr_log( { msg: " ..*2d.1: Particle.render() Particle size now > targetSize. animate cycle: " + this.parent.animateCycles +
+												". Num Particles[]: " + this.parent.particles.length +
+												". numParticlesRenderedAtTargetSize: " + this.parent.numParticlesRenderedAtTargetSize,
+												this: this, outer_index: channelIndex, inner_index: particleIndex,
+												onlyIf: { animationTrace: true } } );
+				// NOTE: animation has started but is not complete, so we need to animate() some more.
+				//if ( this.parent.numParticlesRenderedAtTargetSize >= this.parent.particles.length ) {
+				//	trr_log( { msg: " ..*2d.2: Particle.render() **** STOPPING ANIMATION **** Reached Particle targetSize for all particles. animate cycle: " + this.parent.animateCycles,
+				//									this: this, outer_index: channelIndex, inner_index: particleIndex,
+				//									onlyIf: { animationTrace: true } } );
+				//	this.parent.isActive = false;
+				//}
+			}
 		}
 	};
 
 	Particle.prototype.renderJustCopy = function( ctx, channelIndex, particleIndex ) {
+		ctx.putImageData( this.parent.imgDataObj, 0, 0, this.position.x, this.position.y, 1, 1 );
 	};
 
 	Particle.prototype.calculateSize = function() {
-		trr_log( { msg: " ..*2e: Particle.calculateSize() animate cycle: " + this.parent.animateCycles, this: this, onlyIf: { tracePixell: true } } );
+		if ( this.parent.options.logLevel !== 'none' && !this.parent.options.isTracePixell ) {
+			trr_log( { msg: " ..*2e: Particle.calculateSize() animate cycle: " + this.parent.animateCycles, this: this, onlyIf: { tracePixell: true } } );
+		}
 		if (this.initSize !== 1) {
 			this.initSize += this.initSizeVelocity;
 			this.initSize = Math.min(1, this.initSize);
@@ -186,7 +208,9 @@
 	};
 
 	Particle.prototype.getR_or_g_or_bValue = function() {
-		trr_log( { msg: " ..*2f: Particle.getR_or_g_or_bValue() animate cycle: " + this.parent.animateCycles, this: this, onlyIf: { tracePixell: true } } );
+		if ( this.parent.options.logLevel !== 'none' && !this.parent.options.isTracePixell ) {
+			trr_log( { msg: " ..*2f: Particle.getR_or_g_or_bValue() animate cycle: " + this.parent.animateCycles, this: this, onlyIf: { tracePixell: true } } );
+		}
 		var r_or_g_or_bValue;
 		var position = this.parent.options.isChannelLens ? this.position : this.origin;
 		if ( this.parent.options.isChannelLens ) {
@@ -201,7 +225,9 @@
 	};
 
 	Particle.prototype.applyOriginAttraction = function() {
-		trr_log( { msg: " ..*2g: Particle.applyOriginAttraction() animate cycle: " + this.parent.animateCycles, this: this, onlyIf: { tracePixell: true } } );
+		if ( this.parent.options.logLevel !== 'none' && !this.parent.options.isTracePixell ) {
+			trr_log( { msg: " ..*2g: Particle.applyOriginAttraction() animate cycle: " + this.parent.animateCycles, this: this, onlyIf: { tracePixell: true } } );
+		}
 		var attraction = Vector.subtract(this.position, this.origin);
 		attraction.scale(-0.02);
 		this.applyForce(attraction);
@@ -367,19 +393,26 @@
 		this.animateCycles = 0;
 		this.numParticlesRenderedAtTargetSize = 0;
 		this.previousNumParticlesRenderedAtTargetSize = 0;
-		this.options.maxAnimationCycles = this.options.maxAnimationCycles == 'calculated'
-					? 500
+		this.options.maxAnimationCycles =
+			this.options.maxAnimationCycles == 'calculated'
+					? this.options.isJustCopy ? 1
+							: 500
 					: this.options.maxAnimationCycles;
-		trr_log( { msg: " ..*3.3: Halftone.create() isJustCopy:" + this.options.isJustCopy +
-								". isTracePixell:" + this.options.isTracePixell +
-								". From " + this.options.photoType +
+		this.options.dotSize =
+			this.options.dotSize == 'copied'
+					? this.options.isJustCopy ? 1.0
+						: 1/100
+					: this.options.dotSize;
+		trr_log( { msg: " ..*3.3: Halftone.create() From " + this.options.photoType +
 								" Photo to " + (this.options.channels[0] == 'lum'
 										? 'white'
 										: this.options.effectType == 'halftone_copy'
 												? 'copied'
 												: this.options.channels[0]) +
 								" Halftone particles on a " + this.options.canvasBackgroundColor +
-								" Background. MaxAnimationCycles: " + this.options.maxAnimationCycles + ". *", this: this } );
+								" Background. MaxAnimationCycles: " + this.options.maxAnimationCycles +
+								". isJustCopy:" + this.options.isJustCopy + ". isTracePixell:" + this.options.isTracePixell +
+								". *", this: this } );
 		var canvasAndCtx = makeCanvasAndCtx(); // " ..*3.2: makeCanvasAndCtx() *"
 		this.canvas = canvasAndCtx.canvas;
 		this.ctx = canvasAndCtx.ctx;
@@ -456,7 +489,8 @@
 		// ImageData.data Is a Uint8ClampedArray representing a one-dimensional
 		// array containing the data in the RGBA order, with integer values between
 		// 0 and 255 (included). sarah.jpg imgData.len = '582400'
-		this.imgData = ctx.getImageData( 0, 0, this.imgWidth, this.imgHeight ).data;
+		this.imgDataObj = ctx.getImageData( 0, 0, this.imgWidth, this.imgHeight );
+		this.imgData = this.imgDataObj.data;
 		this.imgDataBackgroundRGBA = "rgba( "    + this.imgData[0] + ", " + this.imgData[1] +
 																 ", " + this.imgData[2] + ", " + this.imgData[3] +
 																 " )";
@@ -477,7 +511,7 @@
 							 "px. img.offsetWidth = " + this.img.offsetWidth + "px. img.offsetHeight = " + this.img.offsetHeight +
 							 "px. diagonal = " + this.diagonal + "px. scale = " + this.imgScale * 100 +
 							 "%. dotSize = " + this.options.dotSize +
-							 ". gridSize = " + this.gridSize + "px per perCent? " +
+							 ". gridSize = " + this.gridSize + "px " +
 							 " *", this: this } );
 		for ( var prop in this.proxyCanvases ) {
 			var proxy = this.proxyCanvases[ prop ];
@@ -528,7 +562,7 @@
 		this.animateCycles += 1;
 		//----------------------------------------------
 		// Always check for animation loop limits. The only place we do check.
-		if ( this.animateCycles > this.options.maxAnimationCycles ) {
+		if ( this.animateCycles >= this.options.maxAnimationCycles ) {
 			trr_log( { msg: " ..*3.10c: **** STOPPED ANIMATION: Because we have made " +
 											this.animateCycles + " animate() cycles. Max is set to " +
 											this.options.maxAnimationCycles + ". Num Particles[]: " + this.particles.length +
@@ -539,12 +573,14 @@
 	};
 
 	Halftone.prototype.update = function() {
-		trr_log( { msg: " ..*3.12: Halftone.update() animate cycle " + this.animateCycles +
-										": Start update loop for " + this.particles.length +
-										" particles. Particles Rendered To Size since last cycle: " +
-										this.numParticlesRenderedAtTargetSize +
-										", previous: " + this.previousNumParticlesRenderedAtTargetSize + ". *" ,
-							 this: this, animateCycles: this.animateCycles, onlyIf: { animationTrace: true } } );
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.12: Halftone.update() animate cycle " + this.animateCycles +
+											": Start update loop for " + this.particles.length +
+											" particles. Particles Rendered To Size since last cycle: " +
+											this.numParticlesRenderedAtTargetSize +
+											", previous: " + this.previousNumParticlesRenderedAtTargetSize + ". *" ,
+							 	 this: this, animateCycles: this.animateCycles, onlyIf: { animationTrace: true } } );
+		}
 		this.previousNumParticlesRenderedAtTargetSize = this.numParticlesRenderedAtTargetSize;
 		this.numParticlesRenderedAtTargetSize = 0;
 		for (var i=0, len = this.particles.length; i < len; i++) {
@@ -557,14 +593,17 @@
 		this.ctx.globalCompositeOperation = 'source-over';
 		// NOTE: ?? seems to need to be 'black' if we set canvas.backgroundColor to 'white' earlier.
 		// was: this.options.isAdditive ? 'black' : 'white';
-		this.ctx.fillStyle = this.options.canvasBackgroundColor == 'white'
-				? 'black'
-				: this.options.isAdditive ? 'black' : 'white';
+		this.ctx.fillStyle =
+			this.options.canvasBackgroundColor == 'copied' ? 'white'
+			: this.options.canvasBackgroundColor == 'white' ? 'black'
+			: this.options.isAdditive ? 'black' : 'white';
 		this.ctx.fillRect( 0, 0, this.width, this.height );
 		this.ctx.globalCompositeOperation = this.options.isAdditive ? 'lighter' : 'darker';
 		var loop_limit = this.channels.length;
-		trr_log( { msg: " ..*3.12a: Halftone.render() animate cycle " + this.animateCycles + ": Start render loop for " + this.channels.length + " channels *" ,
-							 this: this, onlyIf: { animationTrace: true } } );
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.12a: Halftone.render() animate cycle " + this.animateCycles + ": Start render loop for " + this.channels.length + " channels *" ,
+							 	 this: this, onlyIf: { animationTrace: true } } );
+		}
 		for ( var i=0; i < loop_limit; i++ ) {
 			var channel = this.channels[i];
 			this.renderGrid( channel, i ); // " ..*3.13: Halftone.renderGrid() *"
@@ -587,7 +626,9 @@
 	};
 
 	Halftone.prototype.renderGrid = function( channel, channelIndex ) {
-		trr_log( { msg: " ..*3.13: Halftone.renderGrid() *" , this: this, onlyIf: { tracePixell: true } } );
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.13: Halftone.renderGrid() *" , this: this, onlyIf: { tracePixell: true } } );
+		}
 		var proxy = this.proxyCanvases[ channel ];
 		// NOTE: init canvas with one color, i.e. the 'canvasBackgroundColor'
 		// this.imgDataBackgroundRGBA
@@ -605,8 +646,10 @@
 		var loop_limit = particles.length;
 		this.maxRenderGridOuterIndex = this.channels.length -1;
 		this.maxRenderGridInnerIndex = loop_limit;
-		trr_log( { msg: " ..*3.13a: Halftone.renderGrid() LOOP START for animate cycle " +
-										this.animateCycles + ": channel '" + channel + "'. For " + particles.length + " particles. *" , this: this, onlyIf: { animationTrace: true } } );
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.13a: Halftone.renderGrid() LOOP START for animate cycle " +
+											this.animateCycles + ": channel '" + channel + "'. For " + particles.length + " particles. *" , this: this, onlyIf: { animationTrace: true } } );
+		}
 		if ( particles.length == 0 ) {
 			trr_log( { msg: " ..*3.13b: Halftone.renderGrid() LOOP and animation TERMINATED because particles.len = 0 ", this: this } );
 			this.isActive = false; // Stop animation.
@@ -617,50 +660,71 @@
 					particle.render(proxy.ctx, channelIndex, i); // " ..*2d: Particle.render()"
 				}
 		}
-		trr_log( { msg: " ..*3.13c: Halftone.renderGrid() LOOP END for animate cycle " + this.animateCycles + ": going to call 'this.ctx.drawImage(proxy.canvas, 0, 0)' *" , this: this, onlyIf: { tracePixell: true } } );
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.13c: Halftone.renderGrid() LOOP END for animate cycle " + this.animateCycles + ": going to call 'this.ctx.drawImage(proxy.canvas, 0, 0)' *" , this: this, onlyIf: { tracePixell: true } } );
+		}
+
 		this.ctx.drawImage(proxy.canvas, 0, 0);
-		trr_log( { msg: " ..*3.13d: Halftone.renderGrid() DONE *" , this: this, onlyIf: { tracePixell: true } } );
+
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.13d: Halftone.renderGrid() DONE *" , this: this, onlyIf: { tracePixell: true } } );
+		}
 	};
 
 	Halftone.prototype.getCartesianGridParticles = function(channel, angle) {
-		trr_log( { msg: " ..*3.14: Halftone.getCartesianGridParticles() for channel '" + channel + "'. angle '" + angle + "' *", this: this } );
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.14: Halftone.getCartesianGridParticles() for channel '" + channel + "'. angle '" + angle + "' *", this: this } );
+		}
 		var particles = [];
 		var w = this.width,
 				h = this.height,
 				gridSize = this.gridSize,
 				cols = 0,
 				rows = 0,
-				diag = Math.max( w, h ) * ROOT_2,
-				cols = Math.ceil( diag / gridSize );
-				rows = Math.ceil( diag / gridSize );
+				diag = Math.max( w, h ) * ROOT_2;
+		if ( this.options.isJustCopy ) {
+			cols = w;
+			rows = h;
+		} else {
+			cols = Math.ceil( diag / gridSize );
+			rows = Math.ceil( diag / gridSize );
+		}
 		this.maxNumOfParticles =  rows * cols;
 		this.maxParticlesInitOuterIndex = rows -1;
 		this.maxParticlesInitInnerIndex = cols -1;
-		trr_log( { msg: " ..*3.14a: CartesianGridParticles(): BEGIN LOOP: isJustCopy: " +
-									  this.options.isJustCopy + ". isTracePixell: " + this.options.isTracePixell +
-										". gridSize = " + this.gridSize + ". rows = " + rows +
-										". columns = " + cols + ". Max number of particles = " +
-										this.maxNumOfParticles + ". *", this: this } );
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.14a: CartesianGridParticles(): BEGIN LOOP: isJustCopy: " +
+									  	this.options.isJustCopy + ". isTracePixell: " + this.options.isTracePixell +
+											". gridSize = " + this.gridSize + ". rows = " + rows +
+											". columns = " + cols + ". Max number of particles = " +
+											this.maxNumOfParticles + ". *", this: this } );
+		}
 		var isTerminateLoop = false;
 		for ( var row = 0; row < rows; row++ ) {
 			if ( isTerminateLoop) {
 				break;
 			}
 			for ( var col = 0; col < cols; col++ ) {
-				var x1 = ( col + 0.5 ) * gridSize;
-				var y1 = ( row + 0.5 ) * gridSize;
-				x1 -= ( diag - w ) / 2;
-				y1 -= ( diag - h ) / 2;
-				x1 -= w / 2;
-				y1 -= h / 2;
-				var x2 = x1 * Math.cos(angle) - y1 * Math.sin(angle);
-				var y2 = x1 * Math.sin(angle) + y1 * Math.cos(angle);
-				x2 += w / 2;
-				y2 += h / 2;
+				var x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+				if ( this.options.isJustCopy ) {
+					x2 = col;
+					y2 = row;
+				} else {
+					x1 = ( col + 0.5 ) * gridSize;
+					y1 = ( row + 0.5 ) * gridSize;
+					x1 -= ( diag - w ) / 2;
+					y1 -= ( diag - h ) / 2;
+					x1 -= w / 2;
+					y1 -= h / 2;
+					x2 = x1 * Math.cos(angle) - y1 * Math.sin(angle);
+					y2 = x1 * Math.sin(angle) + y1 * Math.cos(angle);
+					x2 += w / 2;
+					y2 += h / 2;
+				}
 				// Returns null if rejected. Else returns Particle.
         // NOTE: rejected particle locations just stay whatever the canvas
         // background/fill color is.
-				var particle = this.initParticle(channel, x2, y2, row, col); // " ..*3.15: Halftone.initParticle()"
+				var particle = this.initParticle( channel, x2, y2, row, col ); // " ..*3.15: Halftone.initParticle()"
 				if ( particle ) {
 					particles.push(particle);
 					if ( this.options.isTracePixell &&
@@ -671,11 +735,13 @@
 				}
 			}
 		}
-		trr_log( { msg: " ..*3.14b: CartesianGridParticles(): END LOOP: particles[].len = " +
-								particles.length + ". Out of " + this.maxNumOfParticles + " possible. " +
-								"Particles Rejected Because Particle Is Out Of Bounds = '" + this.particlesRejectedBecauseParticleIsOutOfBounds +
-								"'. Particles Rejected Because Pixel Value Less Than Dot Size Threshold = '" + this.particlesRejectedBecausePixelValueLessThanDotSizeThreshold +
-								"'. *", this: this } );
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.14b: CartesianGridParticles(): END LOOP: particles[].len = " +
+											particles.length + ". Out of " + this.maxNumOfParticles + " possible. " +
+											"Particles Rejected Because Particle Is Out Of Bounds = '" + this.particlesRejectedBecauseParticleIsOutOfBounds +
+											"'. Particles Rejected Because Pixel Value Less Than Dot Size Threshold = '" + this.particlesRejectedBecausePixelValueLessThanDotSizeThreshold +
+											"'. *", this: this } );
+		}
 		return particles;
 	};
 
@@ -718,54 +784,61 @@
 			this.particlesRejectedBecausePixelValueLessThanDotSizeThreshold += 1;
 			return;
 		}
-		trr_log( { msg: " ..*3.15: Halftone.initParticle() for channel '" +
-										channel + "'. x '" + x + "'. y '" + y +
-										"'. outer_index: '" + outer_index + "'. inner_index: '" + inner_index + "'. *" ,
-							 this: this, outer_index: outer_index, inner_index: inner_index,
-							 onlyIf: { particleInitTrace: true, tracePixell: true }
-						 } );
+		if ( this.options.logLevel !== 'none' && !this.options.isTracePixell ) {
+			trr_log( { msg: " ..*3.15: Halftone.initParticle() for channel '" +
+											channel + "'. x '" + x + "'. y '" + y +
+											"'. outer_index: '" + outer_index + "'. inner_index: '" + inner_index + "'. *" ,
+							   this: this, outer_index: outer_index, inner_index: inner_index,
+							   onlyIf: { particleInitTrace: true, tracePixell: true }
+						   } );
+		}
 		return new Particle( { // make instance of " ..*2a: create Particle()"
 			channel: channel,
 			parent: this,
 			origin: new Vector( x, y ),  // instance of " ..*1a: anonFunc1().Vector"
-			naturalSize: this.gridSize * ROOT_2 / 2,
-			friction: this.options.friction
+			naturalSize: this.options.isJustCopy ? 1.0 : this.gridSize * ROOT_2 / 2,
+			friction: this.options.friction,
+			outerIndex: outer_index,
+			innerIndex: inner_index,
 		});
 	};
 
-	var channelOffset ={red:0, green:1, blue:2};
+	var channelOffset = { red: 0, green: 1, blue: 2 };
 
 	Halftone.prototype.getPixelR_or_g_or_bValue = function(x, y, channel) {
+		var w = this.imgWidth,
+				h = this.imgHeight;
 		x = Math.round(x / this.imgScale);
 		y = Math.round(y / this.imgScale);
-		var w = this.imgWidth;
-		var h = this.imgHeight;
-		if (x < 0 || x > w || y < 0 || y > h) {
-			this.particlesRejectedBecauseParticleIsOutOfBounds += 1;
-			// NOTE: generates too many log msgs even for tracePixell setting.
-			//trr_log( { msg: " ..*3.16: Halftone.getPixelR_or_g_or_bValue() REJECTED pixell for channel '" +
-			//								channel + "' at x: '" + x + "'. y: '" + y +
-			//								"'. Because it is out of bounds: x < 0 or y < 0 or x > imgWidth: '" +
-			//								w + "'. Or y > imgHeight: '" + h + "'. *" ,
-			//					 this: this, onlyIf: { tracePixell: true }
-			//				 } );
-			return 0;
+		if ( !this.options.isJustCopy ) {
+			if (x < 0 || x > w || y < 0 || y > h) {
+				this.particlesRejectedBecauseParticleIsOutOfBounds += 1;
+				// NOTE: generates too many log msgs even for tracePixell setting.
+				//trr_log( { msg: " ..*3.16: Halftone.getPixelR_or_g_or_bValue() REJECTED pixell for channel '" +
+				//								channel + "' at x: '" + x + "'. y: '" + y +
+				//								"'. Because it is out of bounds: x < 0 or y < 0 or x > imgWidth: '" +
+				//								w + "'. Or y > imgHeight: '" + h + "'. *" ,
+				//					 this: this, onlyIf: { tracePixell: true }
+				//				 } );
+				return 0;
+			}
 		}
 		// this.imgData Is a Uint8ClampedArray representing a one-dimensional
 		// array containing the data in the RGBA order, with integer values between
 		// 0 and 255 (included). sarah.jpg imgData.len = '582400'
 		var pixelIndex = (x + y * w) * 4;
 		var value;
-		if (channel === 'lum') {
-			value = this.getPixelLum( pixelIndex );
-		} else if ( this.options.isJustCopy || this.options.isTracePixell ) {
+		if ( this.options.isJustCopy || this.options.isTracePixell ) {
 			value = this.imgData[ pixelIndex ];
+		} else if (channel === 'lum') {
+			value = this.getPixelLum( pixelIndex );
 		} else {
 			var index = pixelIndex + channelOffset[channel];
 			value = this.imgData[ index ] / 255;
 		}
 		value = value || 0;
-		if (!this.options.isAdditiv ) {
+		if ( !this.options.isAdditiv &&
+				 !this.options.isJustCopy && !this.options.isTracePixell ) {
 			value = 1 - value;
 		}
 		return value;
@@ -822,12 +895,13 @@ function trr_log( args ) {
 	var isTracePixell = pluginThis.options.isTracePixell,
 			isJustCopy = pluginThis.options.isJustCopy,
 			logLevel = ( isTracePixell ? 'tracePixell'
-									 : isJustCopy ? ' justCopy'
 									 : pluginThis.options.logLevel ),
 			onlyIf = args.onlyIf || {};
 
 	if ( logLevel == 'none' ) {
 		return;
+	} else if ( isJustCopy ) {
+		logLevel = 'justCopy';
 	}
 	if ( args.onlyIf == undefined &&
 			 ( logLevel == 'all' || logLevel == 'info' ) ) {
@@ -859,20 +933,26 @@ function trr_log( args ) {
 //=================================
 function trr_log_particleMsgs( args, pluginThis, particleThis, isTracePixell, isJustCopy, logLevel, onlyIf, isAlreadyLogged ) {
 //=================================
-  var loggedAsParticleInitTrace = false;
+	if ( isAlreadyLogged ) {
+		return;
+	}
+	var loggedAsParticleInitTrace = false;
 	//-----------------------------------------
 	if ( ( onlyIf.particleInitTrace && logLevel == 'particleInitTrace' ) ||
-       ( logLevel == 'tracePixell' || logLevel == 'justCopy' ) ) {
+       ( !onlyIf.animationTrace && (logLevel == 'tracePixell' || logLevel == 'justCopy' ) ) ) {
 		//---------------------------------------
 		pluginThis.tracingParticleInitialization = true;
 		var logIt = false;
 		if ( args.outer_index == undefined ) {
 			logIt = true;
 		} else if ( pluginThis.getParticlesMethod == 'getCartesianGridParticles' ) {
-			// Only trace first and last 5 particle inits for every 4 loops.
+			// HACK: even if we are filtering out some repetive msgs, prevent
+			// log_animationMsgs from printing it later.
+			loggedAsParticleInitTrace = true;
+			// Only trace first and last 5 particle inits for every 4 or 1000 loops.
 			if ( args.outer_index == 0 ||
 			     args.outer_index == pluginThis.maxParticlesInitOuterIndex ||
-				 	 args.outer_index % 4 == 0 ) {
+				 	 args.outer_index % (isJustCopy ? 1000 : 4) == 0 ) {
 				if ( args.inner_index < 5 ||
 			 		 	 args.inner_index >  pluginThis.maxParticlesInitInnerIndex - 4 ) {
 					logIt = true;
@@ -896,6 +976,9 @@ function trr_log_particleMsgs( args, pluginThis, particleThis, isTracePixell, is
 //=================================
 function trr_log_animationMsgs( args, pluginThis, particleThis, isTracePixell, isJustCopy, logLevel, onlyIf, isAlreadyLogged ) {
 //=================================
+	if ( isAlreadyLogged ) {
+		return;
+	}
 	var loggedAsAnimationTrace = false;
 	//-----------------------------------------
 	if ( ( onlyIf.animationTrace && logLevel == 'animationTrace' ) ||
@@ -905,7 +988,7 @@ function trr_log_animationMsgs( args, pluginThis, particleThis, isTracePixell, i
 		pluginThis.tracingAnimation = true;
 		var logIt = false;
 
-		if ( args.outerIndex == undefined && args.animateCycles == undefined ) {
+		if ( args.outer_index == undefined && args.animateCycles == undefined ) {
 			logIt = true;
 		} else {
 			if ( args.animateCycles !== undefined ) {
@@ -913,13 +996,13 @@ function trr_log_animationMsgs( args, pluginThis, particleThis, isTracePixell, i
 				if ( args.animateCycles % 20 == 1 ) {
 					logIt = true;
 				}
-			} else if ( args.outerIndex !== undefined ) {
+			} else if ( args.outer_index !== undefined ) {
 				// Only trace first 5 particle animation updates for every 50 particles.
-				if ( (args.innerIndex < 5 || args.innerIndex > pluginThis.maxRenderGridInnerIndex - 4) ||  // first 5 or last 5
-							args.innerIndex % 50 == 0 ) { // every 50
+				if ( (args.inner_index < 5 || args.inner_index > pluginThis.maxRenderGridInnerIndex - 4) ||  // first 5 or last 5
+							args.inner_index % 50 == 0 ) { // every 50
 					logIt = true;
 				}
-				if ( args.innerIndex == 0 ) {
+				if ( args.inner_index == 0 ) {
 						console.log( "                                      .............." );
 				}
 			}
